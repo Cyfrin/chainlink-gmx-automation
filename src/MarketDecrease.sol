@@ -6,12 +6,15 @@ import {EventLogDecoder} from "./EventLogDecoder.sol";
 import {ILogAutomation} from "./Chainlink/ILogAutomation.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
+import {Market} from "gmx-synthetics/market/Market.sol";
 
 /// @notice Market Decrease Automation
 contract MarketDecrease is ILogAutomation, EventLogDecoder {
 
     error IncorrectEventName(string eventName, string expectedEventName);
     error IncorrectOrderType(uint256 orderType, uint256 expectedOrderType);
+
+    error DataStreamsLookup(string feedLabel, address[] feeds, string queryLabel, uint256 query, bytes data);
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "OrderCreated";
@@ -26,10 +29,10 @@ contract MarketDecrease is ILogAutomation, EventLogDecoder {
         i_reader = reader;
     }
 
-    function checkLog(ILogAutomation.Log calldata log, bytes calldata) external returns (bool, bytes memory) {
+    function checkLog(ILogAutomation.Log calldata log, bytes calldata) external view returns (bool, bytes memory) {
         // Decode Event Log 2
         (
-            address msgSender,
+            , //msgSender,
             string memory eventName,
             EventUtils.EventLogData memory eventData
         ) = _decodeEventLog2(log);
@@ -50,20 +53,23 @@ contract MarketDecrease is ILogAutomation, EventLogDecoder {
             revert IncorrectOrderType(orderType, EXPECTED_LOG_EVENTDATA_ORDERTYPE);
         }
 
-        address[] memory marketTokens = new address[](swapPath.length + 1);
-        marketTokens[0] = i_reader.getMarket(i_dataStore, market);
+        address[] memory feedIds = new address[](swapPath.length + 1);
+        for (uint256 i = 0; i < feedIds.length; i++) {
+            address marketToken;
+            if (i == 0) {
+                marketToken = i_reader.getMarket(i_dataStore, market).marketToken;
+            } else {
+                marketToken = i_reader.getMarket(i_dataStore, swapPath[i-1]).marketToken;
+            }
+            // TODO: Get FeedId from somewhere using marketToken
+            feedIds[i] = marketToken; // TODO: placeholder for now
+        }
 
-        // reader.getMarket(dataStore, key) // where the key is each one of the decodedEventData feilds
-        // This returns Market.props, which is a struct with the following fields:
-        // - address marketToken;
-        // - address indexToken;
-        // - address longToken;
-        // - address shortToken;
+        string memory feedLabel = "feedIDHex"; // feedLabel can be "feedIDStr" "feedIDHex"
+        string memory queryLabel = "BlockNumber"; //queryLabel can be "BlockNumber" or "Timestamp"
+        bytes memory data = abi.encode(key);
 
-        // Use each marketToken to get the feedId from where? (somewhere external)
-        // add it to a list of feedIds
-
-        // Construct something and revert
+        revert DataStreamsLookup(feedLabel, feedIds, queryLabel, log.blockNumber, data);
     }
 
     function oracleCallback(bytes[] calldata values, bytes calldata extraData)

@@ -5,8 +5,8 @@ libs = [
     "lib",
     "lib/gmx-synthetics/node_modules",
 ]
+via_ir = true
 auto_detect_remappings = false
-
 remappings = [
     "@openzeppelin/=lib/gmx-synthetics/node_modules/@openzeppelin/",
     "ds-test/=lib/forge-std/lib/ds-test/src/",
