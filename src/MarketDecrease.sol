@@ -3,13 +3,15 @@ pragma solidity 0.8.19;
 
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {EventLogDecoder} from "./EventLogDecoder.sol";
-import {ILogAutomation} from "./Chainlink/ILogAutomation.sol";
+import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 import {Market} from "gmx-synthetics/market/Market.sol";
 
 /// @notice Market Decrease Automation
-contract MarketDecrease is ILogAutomation, EventLogDecoder {
+contract MarketDecrease is ILogAutomation {
+    using EventLogDecoder for ILogAutomation.Log;
+    using EventLogDecoder for EventUtils.EventLogData;
 
     error IncorrectEventName(string eventName, string expectedEventName);
     error IncorrectOrderType(uint256 orderType, uint256 expectedOrderType);
@@ -35,20 +37,15 @@ contract MarketDecrease is ILogAutomation, EventLogDecoder {
             , //msgSender,
             string memory eventName,
             EventUtils.EventLogData memory eventData
-        ) = _decodeEventLog2(log);
+        ) = log.decodeEventLog2();
 
         // Ensure that the event name is equal to the expected event name
         if (keccak256(abi.encode(eventName)) != keccak256(abi.encode(EXPECTED_LOG_EVENTNAME))) {
             revert IncorrectEventName(eventName, EXPECTED_LOG_EVENTNAME);
         }
 
-        (
-            bytes32 key,
-            address market,
-            uint256 orderType,
-            address[] memory swapPath
-        ) = _decodeEventData(eventData);
-        
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+
         if (orderType != EXPECTED_LOG_EVENTDATA_ORDERTYPE) {
             revert IncorrectOrderType(orderType, EXPECTED_LOG_EVENTDATA_ORDERTYPE);
         }
@@ -59,7 +56,7 @@ contract MarketDecrease is ILogAutomation, EventLogDecoder {
             if (i == 0) {
                 marketToken = i_reader.getMarket(i_dataStore, market).marketToken;
             } else {
-                marketToken = i_reader.getMarket(i_dataStore, swapPath[i-1]).marketToken;
+                marketToken = i_reader.getMarket(i_dataStore, swapPath[i - 1]).marketToken;
             }
             // TODO: Get FeedId from somewhere using marketToken
             feedIds[i] = marketToken; // TODO: placeholder for now

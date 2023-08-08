@@ -2,10 +2,9 @@
 pragma solidity 0.8.19;
 
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
-import {ILogAutomation} from "./Chainlink/ILogAutomation.sol";
+import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
 
-contract EventLogDecoder {
-
+library EventLogDecoder {
     error IncorrectLogSelector(bytes32 logSelector, bytes32 expectedLogSelector);
     error IncorrectBytes32ItemsLength(uint256 length);
     error KeyNotFound();
@@ -21,6 +20,7 @@ contract EventLogDecoder {
     //////////
 
     // Logs from gmx-synthetics/event/EventEmitter.sol
+    // 0x137a44067c8961cd7e1d876f4754a5a3a75989b4552f1843fc69c3b372def160
     event EventLog1(
         address msgSender,
         string eventName,
@@ -29,6 +29,7 @@ contract EventLogDecoder {
         EventUtils.EventLogData eventData
     );
 
+    // 0x468a25a7ba624ceea6e540ad6f49171b52495b648417ae91bca21676d8a24dc5
     event EventLog2(
         address msgSender,
         string eventName,
@@ -51,22 +52,17 @@ contract EventLogDecoder {
     /// @return msgSender the sender of the transaction that emitted the log
     /// @return eventName the name of the event
     /// @return eventData the EventUtils EventLogData struct
-    function _decodeEventLog2(ILogAutomation.Log calldata log)
+    function decodeEventLog2(ILogAutomation.Log memory log)
         internal
         pure
-        returns (
-            address msgSender,
-            string memory eventName,
-            EventUtils.EventLogData memory eventData
-        )
+        returns (address msgSender, string memory eventName, EventUtils.EventLogData memory eventData)
     {
         // Ensure that the log is an EventLog2 event
         if (log.topics[0] != EventLog2.selector) {
             revert IncorrectLogSelector(log.topics[0], EventLog2.selector);
         }
 
-        (msgSender, eventName, eventData) =
-            abi.decode(log.data, (address, string, EventUtils.EventLogData));
+        (msgSender, eventName, eventData) = abi.decode(log.data, (address, string, EventUtils.EventLogData));
     }
 
     /////////////////////////////////////////
@@ -82,15 +78,10 @@ contract EventLogDecoder {
     /// @return market the market
     /// @return orderType the orderType
     /// @return swapPath the swapPath
-    function _decodeEventData(EventUtils.EventLogData memory eventData)
+    function decodeEventData(EventUtils.EventLogData memory eventData)
         internal
         pure
-        returns (
-            bytes32 key,
-            address market,
-            uint256 orderType,
-            address[] memory swapPath
-        )
+        returns (bytes32 key, address market, uint256 orderType, address[] memory swapPath)
     {
         // Get the key from the eventData
         EventUtils.Bytes32KeyValue[] memory bytes32Items = eventData.bytes32Items.items;
