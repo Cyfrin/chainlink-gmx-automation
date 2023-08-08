@@ -7,17 +7,5 @@ libs = [
 ]
 via_ir = true
 auto_detect_remappings = false
-remappings = [
-    "@openzeppelin/=lib/gmx-synthetics/node_modules/@openzeppelin/",
-    "ds-test/=lib/forge-std/lib/ds-test/src/",
-    "eth-gas-reporter/=lib/gmx-synthetics/node_modules/eth-gas-reporter/",
-    "forge-std/=lib/forge-std/src/",
-    "gmx-synthetics/=lib/gmx-synthetics/contracts/",
-    "hardhat-deploy/=lib/gmx-synthetics/node_modules/hardhat-deploy/",
-    "hardhat/=lib/gmx-synthetics/node_modules/hardhat/",
-    "prb-math/=lib/gmx-synthetics/node_modules/prb-math/",
-    "solidity-code-metrics/=lib/gmx-synthetics/node_modules/",
-    "lib/forge-std:ds-test/=lib/forge-std/lib/ds-test/src/"
-]
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
