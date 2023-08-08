@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
-import {ILogAutomation} from "./ILogAutomation.sol";
+import {ILogAutomation} from "./Chainlink/ILogAutomation.sol";
 
 contract EventLogDecoder {
 

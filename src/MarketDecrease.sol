@@ -3,7 +3,9 @@ pragma solidity 0.8.19;
 
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {EventLogDecoder} from "./EventLogDecoder.sol";
-import {ILogAutomation} from "./ILogAutomation.sol";
+import {ILogAutomation} from "./Chainlink/ILogAutomation.sol";
+import {DataStore} from "gmx-synthetics/data/DataStore.sol";
+import {Reader} from "gmx-synthetics/reader/Reader.sol";
 
 /// @notice Market Decrease Automation
 contract MarketDecrease is ILogAutomation, EventLogDecoder {
@@ -11,8 +13,18 @@ contract MarketDecrease is ILogAutomation, EventLogDecoder {
     error IncorrectEventName(string eventName, string expectedEventName);
     error IncorrectOrderType(uint256 orderType, uint256 expectedOrderType);
 
+    // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "OrderCreated";
     uint256 public constant EXPECTED_LOG_EVENTDATA_ORDERTYPE = 4;
+
+    // IMMUTABLES
+    DataStore public immutable i_dataStore;
+    Reader public immutable i_reader;
+
+    constructor(DataStore dataStore, Reader reader) {
+        i_dataStore = dataStore;
+        i_reader = reader;
+    }
 
     function checkLog(ILogAutomation.Log calldata log, bytes calldata) external returns (bool, bytes memory) {
         // Decode Event Log 2
@@ -37,6 +49,9 @@ contract MarketDecrease is ILogAutomation, EventLogDecoder {
         if (orderType != EXPECTED_LOG_EVENTDATA_ORDERTYPE) {
             revert IncorrectOrderType(orderType, EXPECTED_LOG_EVENTDATA_ORDERTYPE);
         }
+
+        address[] memory marketTokens = new address[](swapPath.length + 1);
+        marketTokens[0] = i_reader.getMarket(i_dataStore, market);
 
         // reader.getMarket(dataStore, key) // where the key is each one of the decodedEventData feilds
         // This returns Market.props, which is a struct with the following fields:
