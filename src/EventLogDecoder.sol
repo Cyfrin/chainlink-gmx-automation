@@ -5,7 +5,7 @@ import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
 
 library EventLogDecoder {
-    error IncorrectLogSelector(bytes32 logSelector, bytes32 expectedLogSelector);
+    error IncorrectLogSelector(bytes32 logSelector);
     error IncorrectBytes32ItemsLength(uint256 length);
     error KeyNotFound();
     error IncorrectAddressItemsLength(uint256 length);
@@ -43,23 +43,21 @@ library EventLogDecoder {
     // EVENT DECODING FUNCTIONS
     ////////////////////////////
 
-    // TODO: decode EventLog1
-
-    /// @notice Decode an EventLog2 event
-    /// @dev This function reverts if the log is not an EventLog2 event
-    /// @dev We only decode non-indexed data from the log here (), hence why eventNameHash, topic1 and topic2 are not returned.
+    /// @notice Decode an EventLog1 or EventLog2 event
+    /// @dev This function reverts if the log is not an EventLog1 or EventLog2 event
+    /// @dev We only decode non-indexed data from the log here, hence why eventNameHash, topic1 (and topic2) is not returned.
     /// @param log the log to decode
     /// @return msgSender the sender of the transaction that emitted the log
     /// @return eventName the name of the event
     /// @return eventData the EventUtils EventLogData struct
-    function decodeEventLog2(ILogAutomation.Log memory log)
+    function decodeEventLog(ILogAutomation.Log memory log)
         internal
         pure
         returns (address msgSender, string memory eventName, EventUtils.EventLogData memory eventData)
     {
-        // Ensure that the log is an EventLog2 event
-        if (log.topics[0] != EventLog2.selector) {
-            revert IncorrectLogSelector(log.topics[0], EventLog2.selector);
+        // Ensure that the log is an EventLog1 or EventLog2 event
+        if (log.topics[0] != EventLog1.selector && log.topics[0] != EventLog2.selector) {
+            revert IncorrectLogSelector(log.topics[0]);
         }
 
         (msgSender, eventName, eventData) = abi.decode(log.data, (address, string, EventUtils.EventLogData));

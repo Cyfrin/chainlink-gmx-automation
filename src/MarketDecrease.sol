@@ -37,7 +37,7 @@ contract MarketDecrease is ILogAutomation {
             , //msgSender,
             string memory eventName,
             EventUtils.EventLogData memory eventData
-        ) = log.decodeEventLog2();
+        ) = log.decodeEventLog();
 
         // Ensure that the event name is equal to the expected event name
         if (keccak256(abi.encode(eventName)) != keccak256(abi.encode(EXPECTED_LOG_EVENTNAME))) {
