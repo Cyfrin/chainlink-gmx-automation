@@ -5,7 +5,7 @@ libs = [
     "lib",
     "lib/gmx-synthetics/node_modules",
 ]
-via_ir = true
+# via_ir = true
 auto_detect_remappings = false
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

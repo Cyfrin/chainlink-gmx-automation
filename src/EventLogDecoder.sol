@@ -39,11 +39,7 @@ library EventLogDecoder {
         EventUtils.EventLogData eventData
     );
 
-    ////////////////////////////
-    // EVENT DECODING FUNCTIONS
-    ////////////////////////////
-
-    /// @notice Decode an EventLog1 or EventLog2 event
+    /// @notice Decode an EventLog1 or EventLog2 event from a ILogAutomation.Log
     /// @dev This function reverts if the log is not an EventLog1 or EventLog2 event
     /// @dev We only decode non-indexed data from the log here, hence why eventNameHash, topic1 (and topic2) is not returned.
     /// @param log the log to decode
@@ -62,11 +58,6 @@ library EventLogDecoder {
 
         (msgSender, eventName, eventData) = abi.decode(log.data, (address, string, EventUtils.EventLogData));
     }
-
-    /////////////////////////////////////////
-    // EVENTUTILS.EVENTDATA DECODER FUNCTIONS
-    /////////////////////////////////////////
-    // Functions to retrieve data from EventUtils.EventData structs
 
     // Need: key, market, orderType, swapPath
     /// @notice Retrieve the key, market, orderType and swapPath from the EventUtils EventLogData struct
