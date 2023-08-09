@@ -5,15 +5,15 @@ import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
 
 library EventLogDecoder {
-    error IncorrectLogSelector(bytes32 logSelector);
-    error IncorrectBytes32ItemsLength(uint256 length);
-    error KeyNotFound();
-    error IncorrectAddressItemsLength(uint256 length);
-    error MarketNotFound();
-    error IncorrectUintItemsLength(uint256 length);
-    error OrderTypeNotFound();
-    error IncorrectAddressArrayItemsLength(uint256 length);
-    error SwapPathNotFound();
+    error EventLogDecoder_IncorrectLogSelector(bytes32 logSelector);
+    error EventLogDecoder_NoBytes32Items();
+    error EventLogDecoder_KeyNotFound();
+    error EventLogDecoder_NoAddressItems();
+    error EventLogDecoder_MarketNotFound();
+    error EventLogDecoder_NoUintItems();
+    error EventLogDecoder_OrderTypeNotFound();
+    error EventLogDecoder_NoAddressArrayItems();
+    error EventLogDecoder_SwapPathNotFound();
 
     //////////
     // EVENTS
@@ -53,7 +53,7 @@ library EventLogDecoder {
     {
         // Ensure that the log is an EventLog1 or EventLog2 event
         if (log.topics[0] != EventLog1.selector && log.topics[0] != EventLog2.selector) {
-            revert IncorrectLogSelector(log.topics[0]);
+            revert EventLogDecoder_IncorrectLogSelector(log.topics[0]);
         }
 
         (msgSender, eventName, eventData) = abi.decode(log.data, (address, string, EventUtils.EventLogData));
@@ -74,7 +74,7 @@ library EventLogDecoder {
     {
         // Get the key from the eventData
         EventUtils.Bytes32KeyValue[] memory bytes32Items = eventData.bytes32Items.items;
-        if (bytes32Items.length == 0) revert IncorrectBytes32ItemsLength(bytes32Items.length);
+        if (bytes32Items.length == 0) revert EventLogDecoder_NoBytes32Items();
         bool foundKey;
         for (uint256 i = 0; i < bytes32Items.length; i++) {
             if (keccak256(abi.encode(bytes32Items[i].key)) == keccak256(abi.encode("key"))) {
@@ -83,11 +83,11 @@ library EventLogDecoder {
                 break;
             }
         }
-        if (!foundKey) revert KeyNotFound();
+        if (!foundKey) revert EventLogDecoder_KeyNotFound();
 
         // Extract the market from the event data
         EventUtils.AddressKeyValue[] memory addressItems = eventData.addressItems.items;
-        if (addressItems.length == 0) revert IncorrectAddressItemsLength(addressItems.length);
+        if (addressItems.length == 0) revert EventLogDecoder_NoAddressItems();
         bool foundMarket;
         for (uint256 i = 0; i < addressItems.length; i++) {
             if (keccak256(abi.encode(addressItems[i].key)) == keccak256(abi.encode("market"))) {
@@ -96,11 +96,11 @@ library EventLogDecoder {
                 break;
             }
         }
-        if (!foundMarket) revert MarketNotFound();
+        if (!foundMarket) revert EventLogDecoder_MarketNotFound();
 
         // Extract the orderType from the event data
         EventUtils.UintKeyValue[] memory uintItems = eventData.uintItems.items;
-        if (uintItems.length == 0) revert IncorrectUintItemsLength(uintItems.length);
+        if (uintItems.length == 0) revert EventLogDecoder_NoUintItems();
         bool foundOrderType;
         for (uint256 i = 0; i < uintItems.length; i++) {
             if (keccak256(abi.encode(uintItems[i].key)) == keccak256(abi.encode("orderType"))) {
@@ -109,11 +109,11 @@ library EventLogDecoder {
                 break;
             }
         }
-        if (!foundOrderType) revert OrderTypeNotFound();
+        if (!foundOrderType) revert EventLogDecoder_OrderTypeNotFound();
 
         // Extract the swapPath from the event data
         EventUtils.AddressArrayKeyValue[] memory addressArrayItems = eventData.addressItems.arrayItems;
-        if (addressArrayItems.length == 0) revert IncorrectAddressArrayItemsLength(addressArrayItems.length);
+        if (addressArrayItems.length == 0) revert EventLogDecoder_NoAddressArrayItems();
         bool foundSwapPath;
         for (uint256 i = 0; i < addressArrayItems.length; i++) {
             if (keccak256(abi.encode(addressArrayItems[i].key)) == keccak256(abi.encode("swapPath"))) {
@@ -122,6 +122,6 @@ library EventLogDecoder {
                 break;
             }
         }
-        if (!foundSwapPath) revert SwapPathNotFound();
+        if (!foundSwapPath) revert EventLogDecoder_SwapPathNotFound();
     }
 }
