@@ -112,34 +112,42 @@ contract EventLogDecoderTest_decodeEventData is Test, TestData {
         }
     }
 
-    function test_decodeEventData_IncorrectBytes32ItemsLength_reverts() public {
+    function test_decodeEventData_keyNotFound_doesntExist_returnsZeroValue() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
-        eventData.bytes32Items.items = new EventUtils.Bytes32KeyValue[](0);
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_NoBytes32Items.selector);
-        eventData.decodeEventData();
-    }
-
-    function test_decodeEventData_KeyNotFound_reverts() public {
-        EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
-        eventData.bytes32Items.items[0].key = "notKey";
         for (uint256 i = 0; i < eventData.bytes32Items.items.length; i++) {
             if (keccak256(abi.encode(eventData.bytes32Items.items[i].key)) == keccak256(abi.encode(string("key")))) {
                 eventData.bytes32Items.items[i].key = "notKey";
                 break;
             }
         }
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_KeyNotFound.selector);
-        eventData.decodeEventData();
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero value
+        assertEq(key, bytes32(0));
+        // normal values
+        assertEq(market, s_market);
+        assertEq(orderType, s_orderType);
+        assertEq(swapPath.length, s_swapPath.length);
+        for (uint256 i = 0; i < swapPath.length; i++) {
+            assertEq(swapPath[i], s_swapPath[i]);
+        }
     }
 
-    function test_decodeEventData_IncorrectAddressItemsLength_reverts() public {
+    function test_decodeEventData_keyNotFound_emptyItems_returnsZeroValue() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
-        eventData.addressItems.items = new EventUtils.AddressKeyValue[](0);
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_NoAddressItems.selector);
-        eventData.decodeEventData();
+        eventData.bytes32Items.items = new EventUtils.Bytes32KeyValue[](0);
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero value
+        assertEq(key, bytes32(0));
+        // normal values
+        assertEq(market, s_market);
+        assertEq(orderType, s_orderType);
+        assertEq(swapPath.length, s_swapPath.length);
+        for (uint256 i = 0; i < swapPath.length; i++) {
+            assertEq(swapPath[i], s_swapPath[i]);
+        }
     }
 
-    function test_decodeEventData_MarketNotFound_reverts() public {
+    function test_decodeEventData_marketNotFound_doesntExist_returnsZeroValue() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
         for (uint256 i = 0; i < eventData.addressItems.items.length; i++) {
             if (keccak256(abi.encode(eventData.addressItems.items[i].key)) == keccak256(abi.encode(string("market")))) {
@@ -147,18 +155,34 @@ contract EventLogDecoderTest_decodeEventData is Test, TestData {
                 break;
             }
         }
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_MarketNotFound.selector);
-        eventData.decodeEventData();
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero value
+        assertEq(market, address(0));
+        // normal values
+        assertEq(key, s_key);
+        assertEq(orderType, s_orderType);
+        assertEq(swapPath.length, s_swapPath.length);
+        for (uint256 i = 0; i < swapPath.length; i++) {
+            assertEq(swapPath[i], s_swapPath[i]);
+        }
     }
 
-    function test_decodeEventData_IncorrectUintItemsLength_reverts() public {
+    function test_decodeEventData_marketNotFound_emptyItems_returnsZeroValue() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
-        eventData.uintItems.items = new EventUtils.UintKeyValue[](0);
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_NoUintItems.selector);
-        eventData.decodeEventData();
+        eventData.addressItems.items = new EventUtils.AddressKeyValue[](0);
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero value
+        assertEq(market, address(0));
+        // normal values
+        assertEq(key, s_key);
+        assertEq(orderType, s_orderType);
+        assertEq(swapPath.length, s_swapPath.length);
+        for (uint256 i = 0; i < swapPath.length; i++) {
+            assertEq(swapPath[i], s_swapPath[i]);
+        }
     }
 
-    function test_decodeEventData_OrderTypeNotFound_reverts() public {
+    function test_decodeEventData_orderTypeNotFound_doesntExist_returnsZeroValue() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
         for (uint256 i = 0; i < eventData.uintItems.items.length; i++) {
             if (keccak256(abi.encode(eventData.uintItems.items[i].key)) == keccak256(abi.encode(string("orderType")))) {
@@ -166,18 +190,34 @@ contract EventLogDecoderTest_decodeEventData is Test, TestData {
                 break;
             }
         }
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_OrderTypeNotFound.selector);
-        eventData.decodeEventData();
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero value
+        assertEq(orderType, uint256(0));
+        // normal values
+        assertEq(key, s_key);
+        assertEq(market, s_market);
+        assertEq(swapPath.length, s_swapPath.length);
+        for (uint256 i = 0; i < swapPath.length; i++) {
+            assertEq(swapPath[i], s_swapPath[i]);
+        }
     }
 
-    function test_decodeEventData_IncorrectAddressArrayItemsLength_reverts() public {
+    function test_decodeEventData_orderTypeNotFound_emptyItems_returnsZeroValue() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
-        eventData.addressItems.arrayItems = new EventUtils.AddressArrayKeyValue[](0);
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_NoAddressArrayItems.selector);
-        eventData.decodeEventData();
+        eventData.uintItems.items = new EventUtils.UintKeyValue[](0);
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero value
+        assertEq(orderType, uint256(0));
+        // normal values
+        assertEq(key, s_key);
+        assertEq(market, s_market);
+        assertEq(swapPath.length, s_swapPath.length);
+        for (uint256 i = 0; i < swapPath.length; i++) {
+            assertEq(swapPath[i], s_swapPath[i]);
+        }
     }
 
-    function test_decodeEventData_SwapPathNotFound_reverts() public {
+    function test_decodeEventData_swapPathNotFound_doesntExist_returnsZeroValue() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
         for (uint256 i = 0; i < eventData.addressItems.arrayItems.length; i++) {
             if (keccak256(abi.encode(eventData.addressItems.arrayItems[i].key)) == keccak256(abi.encode(string("swapPath")))) {
@@ -185,14 +225,35 @@ contract EventLogDecoderTest_decodeEventData is Test, TestData {
                 break;
             }
         }
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_SwapPathNotFound.selector);
-        eventData.decodeEventData();
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero value
+        assertEq(swapPath.length, uint256(0));
+        // normal values
+        assertEq(key, s_key);
+        assertEq(market, s_market);
+        assertEq(orderType, s_orderType);
     }
 
-    function test_decodeEventData_emptyStruct_reverts() public {
+    function test_decodeEventData_swapPathNotFound_emptyItems_returnsZeroValue() public {
+        EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
+        eventData.addressItems.arrayItems = new EventUtils.AddressArrayKeyValue[](0);
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero value
+        assertEq(swapPath.length, uint256(0));
+        // normal values
+        assertEq(key, s_key);
+        assertEq(market, s_market);
+        assertEq(orderType, s_orderType);
+    }
+
+    function test_decodeEventData_emptyStruct_returnsZeroValues() public {
         EventUtils.EventLogData memory eventData;
-        vm.expectRevert(EventLogDecoder.EventLogDecoder_NoBytes32Items.selector);
-        eventData.decodeEventData();
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        // zero values
+        assertEq(key, bytes32(0));
+        assertEq(market, address(0));
+        assertEq(orderType, uint256(0));
+        assertEq(swapPath.length, uint256(0));
     }
 }
 

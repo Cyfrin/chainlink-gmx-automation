@@ -8,6 +8,8 @@ import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 import {Market} from "gmx-synthetics/market/Market.sol";
 
+// TODO: withdraw function to pull the native token from this contract
+
 /// @notice Market Decrease Automation
 contract MarketDecrease is ILogAutomation {
     using EventLogDecoder for ILogAutomation.Log;
@@ -20,6 +22,7 @@ contract MarketDecrease is ILogAutomation {
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "OrderCreated";
+    // TODO: Use checkData instead of this
     uint256 public constant EXPECTED_LOG_EVENTDATA_ORDERTYPE = 4;
     string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDHex";
     string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
@@ -38,7 +41,7 @@ contract MarketDecrease is ILogAutomation {
     /// @notice Retrieve relevant information from the log and perform a data streams lookup
     /// @dev Reverts with custom errors if the event name is not equal to the expected event name (OrderCreated), or if the orderType is not equal to the expected orderType (4)
     /// @dev In the success case, reverts with DataStreamsLookup error containing relevant information for the data streams lookup
-    function checkLog(ILogAutomation.Log calldata log, bytes calldata) external view returns (bool, bytes memory) {
+    function checkLog(ILogAutomation.Log calldata log, bytes calldata checkData) external view returns (bool, bytes memory) {
         // Decode Event Log 2
         (
             , //msgSender,
@@ -77,11 +80,15 @@ contract MarketDecrease is ILogAutomation {
         revert DataStreamsLookup(STRING_DATASTREAMS_FEEDLABEL, feedIds, STRING_DATASTREAMS_QUERYLABEL, log.blockNumber, abi.encode(key));
     }
 
+    // Acts like checkUpkeep in a normal Automation job, probably don't need to do anything.
+    // Values: Each value in array has to be validated by a contract that chainlink provides.
     function oracleCallback(bytes[] calldata values, bytes calldata extraData)
         external
         view
         returns (bool, bytes memory)
     {}
 
+    // TODO: one contract for the Market (increase/Decrease/Swap), one each for the other cases.
+    // TODO: waiting on exact execution functions.
     function performUpkeep(bytes calldata performData) external {}
 }
