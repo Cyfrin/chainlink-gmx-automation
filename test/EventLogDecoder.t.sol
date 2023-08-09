@@ -9,6 +9,11 @@ import {Test, console} from "forge-std/test.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
+/// TEST FILE STRUCTURE
+/// - `EventLogDecoderTest_decodeEventLog` -> EventLogDecoder.decodeEventLog(log)
+/// - `EventLogDecoderTest_decodeEventData` -> EventLogDecoder.decodeEventData(eventData)
+/// - `EventLogDecoderTest_RealData` -> Real data tests
+
 /// @notice EventLogDecoder.decodeEventLog(log);
 contract EventLogDecoderTest_decodeEventLog is Test, TestData {
     using EventLogDecoder for ILogAutomation.Log;
@@ -46,10 +51,16 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
         );
     }
 
+    /////////////
+    // UNIT TESTS
+    /////////////
+
     function test_decodeEventLog_EventLog2_success() public {
-        (address returnedMsgSender, string memory returnedEventName,) = s_log.decodeEventLog();
+        (address returnedMsgSender, string memory returnedEventName, EventUtils.EventLogData memory eventData) =
+            s_log.decodeEventLog();
         assertEq(returnedMsgSender, s_msgSender);
         assertEq(returnedEventName, s_eventName);
+        _assertEqualEventData(eventData, s_market, s_swapPath, s_key, s_orderType);
     }
 
     function test_decodeEventLog_EventLog1_success() public {
@@ -63,9 +74,11 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
             s_key,
             s_orderType
         );
-        (address returnedMsgSender, string memory returnedEventName,) = s_log.decodeEventLog();
+        (address returnedMsgSender, string memory returnedEventName, EventUtils.EventLogData memory eventData) =
+            s_log.decodeEventLog();
         assertEq(returnedMsgSender, s_msgSender);
         assertEq(returnedEventName, s_eventName);
+        _assertEqualEventData(eventData, s_market, s_swapPath, s_key, s_orderType);
     }
 
     function test_decodeEventLog_IncorrectLogSelector_reverts() public {
@@ -80,6 +93,84 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
         s_log.data = abi.encode(s_msgSender, s_eventName, s_market, s_swapPath, s_key, s_orderType);
         vm.expectRevert();
         s_log.decodeEventLog();
+    }
+
+    /////////////
+    // FUZZ TESTS
+    /////////////
+
+    function test_fuzz_decodeEventLog(
+        address msgSender,
+        uint256 blockNumber,
+        bool logSelectorIndex,
+        string memory eventName,
+        address market,
+        address[] memory swapPath,
+        bytes32 key,
+        uint256 orderType
+    ) public {
+        bytes32 logSelector = logSelectorIndex ? EventLogDecoder.EventLog1.selector : EventLogDecoder.EventLog2.selector;
+        s_log = _generateValidLog(msgSender, blockNumber, logSelector, eventName, market, swapPath, key, orderType);
+        (address returnedMsgSender, string memory returnedEventName, EventUtils.EventLogData memory eventData) =
+            s_log.decodeEventLog();
+        assertEq(returnedMsgSender, msgSender);
+        assertEq(returnedEventName, eventName);
+        _assertEqualEventData(eventData, market, swapPath, key, orderType);
+    }
+
+    ////////
+    // UTILS
+    ////////
+
+    function _assertEqualEventData(
+        EventUtils.EventLogData memory eventData,
+        address market,
+        address[] memory swapPath,
+        bytes32 key,
+        uint256 orderType
+    ) private {
+        bool keyFound;
+        for (uint256 i = 0; i < eventData.bytes32Items.items.length; i++) {
+            if (keccak256(abi.encode(eventData.bytes32Items.items[i].key)) == keccak256(abi.encode(string("key")))) {
+                keyFound = true;
+                assertEq(eventData.bytes32Items.items[i].value, key);
+                break;
+            }
+        }
+        assertTrue(keyFound);
+        bool marketFound;
+        for (uint256 i = 0; i < eventData.addressItems.items.length; i++) {
+            if (keccak256(abi.encode(eventData.addressItems.items[i].key)) == keccak256(abi.encode(string("market")))) {
+                marketFound = true;
+                assertEq(eventData.addressItems.items[i].value, market);
+                break;
+            }
+        }
+        assertTrue(marketFound);
+        bool orderTypeFound;
+        for (uint256 i = 0; i < eventData.uintItems.items.length; i++) {
+            if (keccak256(abi.encode(eventData.uintItems.items[i].key)) == keccak256(abi.encode(string("orderType")))) {
+                orderTypeFound = true;
+                assertEq(eventData.uintItems.items[i].value, orderType);
+                break;
+            }
+        }
+        assertTrue(orderTypeFound);
+        bool swapPathFound;
+        for (uint256 i = 0; i < eventData.addressItems.arrayItems.length; i++) {
+            if (
+                keccak256(abi.encode(eventData.addressItems.arrayItems[i].key))
+                    == keccak256(abi.encode(string("swapPath")))
+            ) {
+                swapPathFound = true;
+                assertEq(eventData.addressItems.arrayItems[i].value.length, swapPath.length);
+                for (uint256 j = 0; j < eventData.addressItems.arrayItems[i].value.length; j++) {
+                    assertEq(eventData.addressItems.arrayItems[i].value[j], swapPath[j]);
+                }
+                break;
+            }
+        }
+        assertTrue(swapPathFound);
     }
 }
 
@@ -101,6 +192,10 @@ contract EventLogDecoderTest_decodeEventData is Test, TestData {
         s_key = keccak256("GMX");
         s_orderType = 4;
     }
+
+    /////////////
+    // UNIT TESTS
+    /////////////
 
     function test_decodeEventData_success() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);

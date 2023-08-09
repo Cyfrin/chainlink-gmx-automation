@@ -29,7 +29,7 @@ contract TestData {
         log = ILogAutomation.Log({
             index: 1,
             txIndex: 2,
-            txHash: bytes32("1"),
+            txHash: keccak256("1"),
             blockNumber: blockNumber,
             blockHash: blockhash(blockNumber),
             source: msgSender,
