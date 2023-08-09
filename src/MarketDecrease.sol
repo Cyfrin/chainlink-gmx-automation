@@ -84,9 +84,11 @@ contract MarketDecrease is ILogAutomation {
     // Values: Each value in array has to be validated by a contract that chainlink provides.
     function oracleCallback(bytes[] calldata values, bytes calldata extraData)
         external
-        view
+        pure
         returns (bool, bytes memory)
-    {}
+    {
+        return (true, abi.encode(values, extraData));
+    }
 
     // TODO: one contract for the Market (increase/Decrease/Swap), one each for the other cases.
     // TODO: waiting on exact execution functions.
