@@ -12,6 +12,7 @@ import {Market} from "gmx-synthetics/market/Market.sol";
 import {Ownable2Step} from "openzeppelin/access/Ownable2Step.sol";
 import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
+// TODO: Make this "MarketAutomation" and handle all market automation cases
 /// @title Market Decrease Automation
 /// @author Alex Roan - Cyfrin (@alexroan)
 contract MarketDecrease is ILogAutomation, Ownable2Step {
