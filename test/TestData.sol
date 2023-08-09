@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import {ILogAutomation} from "../src/chainlink/ILogAutomation.sol";
+// gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
 contract TestData {

@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {Test, console} from "forge-std/test.sol";
+import {TestData} from "./TestData.sol";
 import {EventLogDecoder} from "../src/EventLogDecoder.sol";
 import {ILogAutomation} from "../src/chainlink/ILogAutomation.sol";
+// forge-std
+import {Test, console} from "forge-std/test.sol";
+// gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
-import {TestData} from "./TestData.sol";
 
 /// @notice EventLogDecoder.decodeEventLog(log);
 contract EventLogDecoderTest_decodeEventLog is Test, TestData {
@@ -45,8 +47,7 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
     }
 
     function test_decodeEventLog_EventLog2_success() public {
-        (address returnedMsgSender, string memory returnedEventName,) =
-            s_log.decodeEventLog();
+        (address returnedMsgSender, string memory returnedEventName,) = s_log.decodeEventLog();
         assertEq(returnedMsgSender, s_msgSender);
         assertEq(returnedEventName, s_eventName);
     }
@@ -62,15 +63,16 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
             s_key,
             s_orderType
         );
-        (address returnedMsgSender, string memory returnedEventName,) =
-            s_log.decodeEventLog();
+        (address returnedMsgSender, string memory returnedEventName,) = s_log.decodeEventLog();
         assertEq(returnedMsgSender, s_msgSender);
         assertEq(returnedEventName, s_eventName);
     }
 
     function test_decodeEventLog_IncorrectLogSelector_reverts() public {
         s_log.topics[0] = bytes32(0);
-        vm.expectRevert(abi.encodeWithSelector(EventLogDecoder.EventLogDecoder_IncorrectLogSelector.selector, s_log.topics[0]));
+        vm.expectRevert(
+            abi.encodeWithSelector(EventLogDecoder.EventLogDecoder_IncorrectLogSelector.selector, s_log.topics[0])
+        );
         s_log.decodeEventLog();
     }
 
@@ -220,7 +222,10 @@ contract EventLogDecoderTest_decodeEventData is Test, TestData {
     function test_decodeEventData_swapPathNotFound_doesntExist_returnsZeroValue() public {
         EventUtils.EventLogData memory eventData = _generateValidEventData(s_market, s_swapPath, s_key, s_orderType);
         for (uint256 i = 0; i < eventData.addressItems.arrayItems.length; i++) {
-            if (keccak256(abi.encode(eventData.addressItems.arrayItems[i].key)) == keccak256(abi.encode(string("swapPath")))) {
+            if (
+                keccak256(abi.encode(eventData.addressItems.arrayItems[i].key))
+                    == keccak256(abi.encode(string("swapPath")))
+            ) {
                 eventData.addressItems.arrayItems[i].key = "notSwapPath";
                 break;
             }

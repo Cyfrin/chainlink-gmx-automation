@@ -1,19 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
-import {EventLogDecoder} from "./EventLogDecoder.sol";
 import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
+import {EventLogDecoder} from "./EventLogDecoder.sol";
+// gmx-synthetics
+import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 import {Market} from "gmx-synthetics/market/Market.sol";
+// openzeppelin
+import {Ownable2Step} from "openzeppelin/access/Ownable2Step.sol";
+import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
-// TODO: withdraw function to pull the native token from this contract
-
-/// @notice Market Decrease Automation
-contract MarketDecrease is ILogAutomation {
+/// @title Market Decrease Automation
+/// @author Alex Roan - Cyfrin (@alexroan)
+contract MarketDecrease is ILogAutomation, Ownable2Step {
     using EventLogDecoder for ILogAutomation.Log;
     using EventLogDecoder for EventUtils.EventLogData;
+    using SafeERC20 for IERC20;
 
     // ERRORS
     error IncorrectEventName(string eventName, string expectedEventName);
@@ -33,15 +37,25 @@ contract MarketDecrease is ILogAutomation {
 
     /// @param dataStore the DataStore contract address - immutable
     /// @param reader the Reader contract address - immutable
-    constructor(DataStore dataStore, Reader reader) {
+    constructor(DataStore dataStore, Reader reader) Ownable2Step() {
         i_dataStore = dataStore;
         i_reader = reader;
+    }
+
+    /// @notice Withdraw any ERC20 tokens from the contract
+    /// @dev Only callable by the owner
+    /// @param tokens the tokens to withdraw
+    /// @param to the address to withdraw the tokens to
+    function withdrawTokens(IERC20[] memory tokens, address to) external onlyOwner {
+        for (uint256 i = 0; i < tokens.length; i++) {
+            tokens[i].safeTransfer(to, tokens[i].balanceOf(address(this)));
+        }
     }
 
     /// @notice Retrieve relevant information from the log and perform a data streams lookup
     /// @dev Reverts with custom errors if the event name is not equal to the expected event name (OrderCreated), or if the orderType is not equal to the expected orderType (4)
     /// @dev In the success case, reverts with DataStreamsLookup error containing relevant information for the data streams lookup
-    function checkLog(ILogAutomation.Log calldata log, bytes calldata checkData) external view returns (bool, bytes memory) {
+    function checkLog(ILogAutomation.Log calldata log, bytes calldata) external view returns (bool, bytes memory) {
         // Decode Event Log 2
         (
             , //msgSender,
@@ -77,7 +91,9 @@ contract MarketDecrease is ILogAutomation {
         }
 
         // Construct the data for the data streams lookup error
-        revert DataStreamsLookup(STRING_DATASTREAMS_FEEDLABEL, feedIds, STRING_DATASTREAMS_QUERYLABEL, log.blockNumber, abi.encode(key));
+        revert DataStreamsLookup(
+            STRING_DATASTREAMS_FEEDLABEL, feedIds, STRING_DATASTREAMS_QUERYLABEL, log.blockNumber, abi.encode(key)
+        );
     }
 
     // Acts like checkUpkeep in a normal Automation job, probably don't need to do anything.

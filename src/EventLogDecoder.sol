@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
+// gmx-synthetics
+import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
+/// @title Event Log Decoder
+/// @author Alex Roan - Cyfrin (@alexroan)
 library EventLogDecoder {
     error EventLogDecoder_IncorrectLogSelector(bytes32 logSelector);
 
