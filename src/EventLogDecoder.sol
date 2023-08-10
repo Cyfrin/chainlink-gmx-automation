@@ -34,6 +34,10 @@ library EventLogDecoder {
         EventUtils.EventLogData eventData
     );
 
+    /////////////
+    // FUNCTIONS
+    /////////////
+
     /// @notice Decode an EventLog1 or EventLog2 event from a ILogAutomation.Log
     /// @dev This function reverts if the log is not an EventLog1 or EventLog2 event
     /// @dev We only decode non-indexed data from the log here, hence why eventNameHash, topic1 (and topic2) is not returned.

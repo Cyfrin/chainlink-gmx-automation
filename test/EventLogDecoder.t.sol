@@ -10,9 +10,12 @@ import {Test, console} from "forge-std/test.sol";
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
 /// TEST FILE STRUCTURE
-/// - `EventLogDecoderTest_decodeEventLog` -> EventLogDecoder.decodeEventLog(log)
-/// - `EventLogDecoderTest_decodeEventData` -> EventLogDecoder.decodeEventData(eventData)
-/// - `EventLogDecoderTest_RealData` -> Real data tests
+/// -------------------
+/// Each function in the target conrtact has it's own test contract in this file.
+///
+/// - `contract EventLogDecoderTest_decodeEventLog` -> EventLogDecoder.decodeEventLog(log)
+/// - `contract EventLogDecoderTest_decodeEventData` -> EventLogDecoder.decodeEventData(eventData)
+/// - `contract EventLogDecoderTest_RealData` -> Real data tests
 
 /// @notice EventLogDecoder.decodeEventLog(log);
 contract EventLogDecoderTest_decodeEventLog is Test, TestData {
