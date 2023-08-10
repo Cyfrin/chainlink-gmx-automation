@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
+import {ILogAutomation} from "../chainlink/ILogAutomation.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
 /// @title Event Log Decoder
 /// @author Alex Roan - Cyfrin (@alexroan)
-library EventLogDecoder {
-    error EventLogDecoder_IncorrectLogSelector(bytes32 logSelector);
+library LibEventLogDecoder {
+    error LibEventLogDecoder_IncorrectLogSelector(bytes32 logSelector);
 
     //////////
     // EVENTS
@@ -52,7 +52,7 @@ library EventLogDecoder {
     {
         // Ensure that the log is an EventLog1 or EventLog2 event
         if (log.topics[0] != EventLog1.selector && log.topics[0] != EventLog2.selector) {
-            revert EventLogDecoder_IncorrectLogSelector(log.topics[0]);
+            revert LibEventLogDecoder_IncorrectLogSelector(log.topics[0]);
         }
 
         (msgSender, eventName, eventData) = abi.decode(log.data, (address, string, EventUtils.EventLogData));

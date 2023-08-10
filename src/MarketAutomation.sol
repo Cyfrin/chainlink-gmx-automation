@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
-import {EventLogDecoder} from "./EventLogDecoder.sol";
+import {LibEventLogDecoder} from "./libraries/LibEventLogDecoder.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
@@ -15,8 +15,8 @@ import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 /// @title Market Automation - Handles Market Decrease, Increase and Swap cases
 /// @author Alex Roan - Cyfrin (@alexroan)
 contract MarketAutomation is ILogAutomation, Ownable2Step {
-    using EventLogDecoder for ILogAutomation.Log;
-    using EventLogDecoder for EventUtils.EventLogData;
+    using LibEventLogDecoder for ILogAutomation.Log;
+    using LibEventLogDecoder for EventUtils.EventLogData;
     using SafeERC20 for IERC20;
 
     // ERRORS

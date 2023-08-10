@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import {MarketAutomation, DataStore, Reader} from "../src/MarketAutomation.sol";
 import {TestData} from "./TestData.sol";
 import {ILogAutomation} from "../src/chainlink/ILogAutomation.sol";
-import {EventLogDecoder} from "../src/EventLogDecoder.sol";
+import {LibEventLogDecoder} from "../src/libraries/LibEventLogDecoder.sol";
 // forge-std
 import {Test, console} from "forge-std/test.sol";
 // openzeppelin
@@ -60,7 +60,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         uint256 orderType,
         bytes calldata data
     ) public {
-        bytes32 logSelector = logSelectorIndex ? EventLogDecoder.EventLog1.selector : EventLogDecoder.EventLog2.selector;
+        bytes32 logSelector = logSelectorIndex ? LibEventLogDecoder.EventLog1.selector : LibEventLogDecoder.EventLog2.selector;
         ILogAutomation.Log memory log = _generateValidLog(
             msgSender,
             blockNumber,

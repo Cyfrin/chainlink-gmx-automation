@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {TestData} from "./TestData.sol";
-import {EventLogDecoder} from "../src/EventLogDecoder.sol";
-import {ILogAutomation} from "../src/chainlink/ILogAutomation.sol";
+import {TestData} from "../TestData.sol";
+import {LibEventLogDecoder} from "../../src/libraries/LibEventLogDecoder.sol";
+import {ILogAutomation} from "../../src/chainlink/ILogAutomation.sol";
 // forge-std
 import {Test, console} from "forge-std/test.sol";
 // gmx-synthetics
@@ -13,14 +13,14 @@ import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 /// -------------------
 /// Each function in the target conrtact has it's own test contract in this file.
 ///
-/// - `contract EventLogDecoderTest_decodeEventLog` -> EventLogDecoder.decodeEventLog(log)
-/// - `contract EventLogDecoderTest_decodeEventData` -> EventLogDecoder.decodeEventData(eventData)
-/// - `contract EventLogDecoderTest_RealData` -> Real data tests
+/// - `contract LibEventLogDecoderTest_decodeEventLog` -> LibEventLogDecoder.decodeEventLog(log)
+/// - `contract LibEventLogDecoderTest_decodeEventData` -> LibEventLogDecoder.decodeEventData(eventData)
+/// - `contract LibEventLogDecoderTest_RealData` -> Real data tests
 
-/// @notice EventLogDecoder.decodeEventLog(log);
-contract EventLogDecoderTest_decodeEventLog is Test, TestData {
-    using EventLogDecoder for ILogAutomation.Log;
-    using EventLogDecoder for EventUtils.EventLogData;
+/// @notice LibEventLogDecoder.decodeEventLog(log);
+contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
+    using LibEventLogDecoder for ILogAutomation.Log;
+    using LibEventLogDecoder for EventUtils.EventLogData;
 
     address internal s_msgSender;
     uint256 internal s_blockNumber;
@@ -45,7 +45,7 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
         s_log = _generateValidLog(
             s_msgSender,
             s_blockNumber,
-            EventLogDecoder.EventLog2.selector,
+            LibEventLogDecoder.EventLog2.selector,
             s_eventName,
             s_market,
             s_swapPath,
@@ -70,7 +70,7 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
         s_log = _generateValidLog(
             s_msgSender,
             s_blockNumber,
-            EventLogDecoder.EventLog1.selector,
+            LibEventLogDecoder.EventLog1.selector,
             s_eventName,
             s_market,
             s_swapPath,
@@ -87,7 +87,7 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
     function test_decodeEventLog_IncorrectLogSelector_reverts() public {
         s_log.topics[0] = bytes32(0);
         vm.expectRevert(
-            abi.encodeWithSelector(EventLogDecoder.EventLogDecoder_IncorrectLogSelector.selector, s_log.topics[0])
+            abi.encodeWithSelector(LibEventLogDecoder.LibEventLogDecoder_IncorrectLogSelector.selector, s_log.topics[0])
         );
         s_log.decodeEventLog();
     }
@@ -112,7 +112,7 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
         bytes32 key,
         uint256 orderType
     ) public {
-        bytes32 logSelector = logSelectorIndex ? EventLogDecoder.EventLog1.selector : EventLogDecoder.EventLog2.selector;
+        bytes32 logSelector = logSelectorIndex ? LibEventLogDecoder.EventLog1.selector : LibEventLogDecoder.EventLog2.selector;
         s_log = _generateValidLog(msgSender, blockNumber, logSelector, eventName, market, swapPath, key, orderType);
         (address returnedMsgSender, string memory returnedEventName, EventUtils.EventLogData memory eventData) =
             s_log.decodeEventLog();
@@ -177,10 +177,10 @@ contract EventLogDecoderTest_decodeEventLog is Test, TestData {
     }
 }
 
-/// @notice EventLogDecoder.decodeEventData(eventData);
-contract EventLogDecoderTest_decodeEventData is Test, TestData {
-    using EventLogDecoder for ILogAutomation.Log;
-    using EventLogDecoder for EventUtils.EventLogData;
+/// @notice LibEventLogDecoder.decodeEventData(eventData);
+contract LibEventLogDecoderTest_decodeEventData is Test, TestData {
+    using LibEventLogDecoder for ILogAutomation.Log;
+    using LibEventLogDecoder for EventUtils.EventLogData;
 
     address internal s_market;
     address[] internal s_swapPath;
@@ -360,9 +360,9 @@ contract EventLogDecoderTest_decodeEventData is Test, TestData {
     }
 }
 
-contract EventLogDecoderTest_RealData is Test, TestData {
-    using EventLogDecoder for ILogAutomation.Log;
-    using EventLogDecoder for EventUtils.EventLogData;
+contract LibEventLogDecoderTest_RealData is Test, TestData {
+    using LibEventLogDecoder for ILogAutomation.Log;
+    using LibEventLogDecoder for EventUtils.EventLogData;
 
     // REAL DATA TESTS
     // Test decoding an event log 2
