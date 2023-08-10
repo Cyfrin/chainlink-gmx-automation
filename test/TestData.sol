@@ -22,7 +22,9 @@ contract TestData {
         address market,
         address[] memory swapPath,
         bytes32 key,
-        uint256 orderType
+        uint256 orderType,
+        address[] memory longTokenSwapPath,
+        address[] memory shortTokenSwapPath
     ) internal view returns (ILogAutomation.Log memory log) {
         bytes32[] memory topics = new bytes32[](4);
         topics[0] = logSelector;
@@ -34,15 +36,22 @@ contract TestData {
             blockHash: blockhash(blockNumber),
             source: msgSender,
             topics: topics,
-            data: abi.encode(msgSender, eventName, _generateValidEventData(market, swapPath, key, orderType))
+            data: abi.encode(
+                msgSender,
+                eventName,
+                _generateValidEventData(market, swapPath, key, orderType, longTokenSwapPath, shortTokenSwapPath)
+                )
         });
     }
 
-    function _generateValidEventData(address market, address[] memory swapPath, bytes32 key, uint256 orderType)
-        internal
-        pure
-        returns (EventUtils.EventLogData memory eventData)
-    {
+    function _generateValidEventData(
+        address market,
+        address[] memory swapPath,
+        bytes32 key,
+        uint256 orderType,
+        address[] memory longTokenSwapPath,
+        address[] memory shortTokenSwapPath
+    ) internal pure returns (EventUtils.EventLogData memory eventData) {
         eventData.addressItems.initItems(6);
         eventData.addressItems.setItem(0, "account", address(1));
         eventData.addressItems.setItem(1, "receiver", address(2));
@@ -51,8 +60,10 @@ contract TestData {
         eventData.addressItems.setItem(4, "market", market);
         eventData.addressItems.setItem(5, "initialCollateralToken", address(5));
 
-        eventData.addressItems.initArrayItems(1);
+        eventData.addressItems.initArrayItems(3);
         eventData.addressItems.setItem(0, "swapPath", swapPath);
+        eventData.addressItems.setItem(1, "longTokenSwapPath", longTokenSwapPath);
+        eventData.addressItems.setItem(2, "shortTokenSwapPath", shortTokenSwapPath);
 
         eventData.uintItems.initItems(10);
         eventData.uintItems.setItem(0, "orderType", orderType);

@@ -58,9 +58,12 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         address[] memory swapPath,
         bytes32 key,
         uint256 orderType,
+        address[] memory longTokenSwapPath,
+        address[] memory shortTokenSwapPath,
         bytes calldata data
     ) public {
-        bytes32 logSelector = logSelectorIndex ? LibEventLogDecoder.EventLog1.selector : LibEventLogDecoder.EventLog2.selector;
+        bytes32 logSelector =
+            logSelectorIndex ? LibEventLogDecoder.EventLog1.selector : LibEventLogDecoder.EventLog2.selector;
         ILogAutomation.Log memory log = _generateValidLog(
             msgSender,
             blockNumber,
@@ -69,9 +72,13 @@ contract MarketAutomationTest_checkLog is Test, TestData {
             market,
             swapPath,
             key,
-            orderType
+            orderType,
+            longTokenSwapPath,
+            shortTokenSwapPath
         );
         vm.expectRevert();
         s_marketAutomation.checkLog(log, data);
     }
+
+    // TODO: Every code path test (happy and sad)
 }

@@ -71,7 +71,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         }
 
         // Decode the EventData struct to retrieve relevant data
-        (bytes32 key, address market, uint256 orderType, address[] memory swapPath) = eventData.decodeEventData();
+        (bytes32 key, address market, uint256 orderType, address[] memory swapPath,,) = eventData.decodeEventData();
 
         // Revert if the orderType is not equal to one of the expected orderTypes
         if (

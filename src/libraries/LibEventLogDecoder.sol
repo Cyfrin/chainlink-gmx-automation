@@ -58,19 +58,27 @@ library LibEventLogDecoder {
         (msgSender, eventName, eventData) = abi.decode(log.data, (address, string, EventUtils.EventLogData));
     }
 
-    /// @notice Retrieve the key, market, orderType and swapPath from the EventUtils EventLogData struct
-    /// @dev This function reverts if any of the keys (key, market, orderType and swapPath) are not present in the EventUtils EventLogData struct
+    /// @notice Retrieve the key, market, orderType, swapPath, longTokenSwapPath and shortTokenSwapPath from the EventUtils EventLogData struct
     /// @param eventData the EventUtils EventLogData struct
     /// @return key the key
     /// @return market the market
     /// @return orderType the orderType
     /// @return swapPath the swapPath
+    /// @return longTokenSwapPath the longTokenSwapPath
+    /// @return shortTokenSwapPath the shortTokenSwapPath
     function decodeEventData(EventUtils.EventLogData memory eventData)
         internal
         pure
-        returns (bytes32 key, address market, uint256 orderType, address[] memory swapPath)
+        returns (
+            bytes32 key,
+            address market,
+            uint256 orderType,
+            address[] memory swapPath,
+            address[] memory longTokenSwapPath,
+            address[] memory shortTokenSwapPath
+        )
     {
-        // Get the key from the eventData
+        // Get the key from the eventData bytes32 items
         EventUtils.Bytes32KeyValue[] memory bytes32Items = eventData.bytes32Items.items;
         for (uint256 i = 0; i < bytes32Items.length; i++) {
             if (keccak256(abi.encode(bytes32Items[i].key)) == keccak256(abi.encode("key"))) {
@@ -79,7 +87,7 @@ library LibEventLogDecoder {
             }
         }
 
-        // Extract the market from the event data
+        // Extract the market from the event data address items
         EventUtils.AddressKeyValue[] memory addressItems = eventData.addressItems.items;
         for (uint256 i = 0; i < addressItems.length; i++) {
             if (keccak256(abi.encode(addressItems[i].key)) == keccak256(abi.encode("market"))) {
@@ -88,7 +96,7 @@ library LibEventLogDecoder {
             }
         }
 
-        // Extract the orderType from the event data
+        // Extract the orderType from the event data uint items
         EventUtils.UintKeyValue[] memory uintItems = eventData.uintItems.items;
         for (uint256 i = 0; i < uintItems.length; i++) {
             if (keccak256(abi.encode(uintItems[i].key)) == keccak256(abi.encode("orderType"))) {
@@ -97,12 +105,17 @@ library LibEventLogDecoder {
             }
         }
 
-        // Extract the swapPath from the event data
+        // Extract the swapPath, longTokenSwapPath and shortTokenSwapPath from the event data address array items
         EventUtils.AddressArrayKeyValue[] memory addressArrayItems = eventData.addressItems.arrayItems;
         for (uint256 i = 0; i < addressArrayItems.length; i++) {
             if (keccak256(abi.encode(addressArrayItems[i].key)) == keccak256(abi.encode("swapPath"))) {
                 swapPath = addressArrayItems[i].value;
-                break;
+            }
+            if (keccak256(abi.encode(addressArrayItems[i].key)) == keccak256(abi.encode("longTokenSwapPath"))) {
+                longTokenSwapPath = addressArrayItems[i].value;
+            }
+            if (keccak256(abi.encode(addressArrayItems[i].key)) == keccak256(abi.encode("shortTokenSwapPath"))) {
+                shortTokenSwapPath = addressArrayItems[i].value;
             }
         }
     }
