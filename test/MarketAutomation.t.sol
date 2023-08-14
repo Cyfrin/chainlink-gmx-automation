@@ -49,6 +49,10 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         s_marketAutomation = new MarketAutomation(DataStore(address(1)), Reader(address(2)));
     }
 
+    //////////////
+    // UNIT TESTS
+    //////////////
+
     function test_fuzz_checkLog_revertsInEveryCase(
         address msgSender,
         uint256 blockNumber,
@@ -80,5 +84,13 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         s_marketAutomation.checkLog(log, data);
     }
 
-    // TODO: Every code path test (happy and sad)
+    // TODO
+    function test_checkLog_success() public {}
+    // TODO
+    function test_checkLog_LibEventLogDecoder_IncorrectLogSelector_reverts() public {}
+    // TODO
+    function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {}
+    // TODO
+    function test_checkLog_MarketAutomation_IncorrectOrderType_reverts() public {}
+
 }

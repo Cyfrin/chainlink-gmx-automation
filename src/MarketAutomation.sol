@@ -20,8 +20,9 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     using SafeERC20 for IERC20;
 
     // ERRORS
-    error IncorrectEventName(string eventName, string expectedEventName);
-    error IncorrectOrderType(uint256 orderType);
+    error MarketAutomation_IncorrectEventName(string eventName, string expectedEventName);
+    error MarketAutomation_IncorrectOrderType(uint256 orderType);
+    // Specific revert for offchain lookup
     error DataStreamsLookup(string feedLabel, address[] feeds, string queryLabel, uint256 query, bytes data);
 
     // CONSTANTS
@@ -67,7 +68,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
 
         // Ensure that the event name is equal to the expected event name
         if (keccak256(abi.encode(eventName)) != keccak256(abi.encode(EXPECTED_LOG_EVENTNAME))) {
-            revert IncorrectEventName(eventName, EXPECTED_LOG_EVENTNAME);
+            revert MarketAutomation_IncorrectEventName(eventName, EXPECTED_LOG_EVENTNAME);
         }
 
         // Decode the EventData struct to retrieve relevant data
@@ -78,7 +79,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
             orderType != EXPECTED_LOG_EVENTDATA_ORDERTYPE_0 && orderType != EXPECTED_LOG_EVENTDATA_ORDERTYPE_2
                 && orderType != EXPECTED_LOG_EVENTDATA_ORDERTYPE_4
         ) {
-            revert IncorrectOrderType(orderType);
+            revert MarketAutomation_IncorrectOrderType(orderType);
         }
 
         // For each address in:
