@@ -29,3 +29,4 @@
 6. (Chainlink) The DataStreamsLookup error definition has changed to account for `bytes32[] feedIds` instead of `address[] feeds`. Are there any ramifications to that on your end?
 7. (GMX) What exactly is called in `performUpkeep`? (Contract and function)
 8. (Chainlink) Is the data passed into `oracleCallback` encoded off-chain, ready to be passed into whatever function is called in `performUpkeep`?
+9. `withdraw` function allows the withdrawal of ERC20 tokens. Do we need to support native token also?

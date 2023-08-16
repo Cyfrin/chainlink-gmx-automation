@@ -52,12 +52,10 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
 
     /// @notice Withdraw any ERC20 tokens from the contract
     /// @dev Only callable by the owner
-    /// @param tokens the tokens to withdraw
+    /// @param token the token to withdraw
     /// @param to the address to withdraw the tokens to
-    function withdrawTokens(IERC20[] memory tokens, address to) external onlyOwner {
-        for (uint256 i = 0; i < tokens.length; i++) {
-            tokens[i].safeTransfer(to, tokens[i].balanceOf(address(this)));
-        }
+    function withdraw(IERC20 token, address to, uint256 amount) external onlyOwner {
+        token.safeTransfer(to, amount);
     }
 
     /// @notice Retrieve relevant information from the log and perform a data streams lookup

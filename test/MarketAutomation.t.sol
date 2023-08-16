@@ -11,8 +11,8 @@ import {Test, console} from "forge-std/test.sol";
 import {ERC20Mock} from "openzeppelin/mocks/ERC20Mock.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
 
-/// @notice MarketAutomation.withdrawTokens(IERC20[] memory tokens, address to);
-contract MarketAutomationTest_withdrawTokens is Test {
+/// @notice MarketAutomation.withdraw(IERC20 token, address to, uint256 amount);
+contract MarketAutomationTest_withdraw is Test {
     ERC20Mock internal s_token;
     MarketAutomation internal s_marketAutomation;
 
@@ -21,22 +21,18 @@ contract MarketAutomationTest_withdrawTokens is Test {
         s_marketAutomation = new MarketAutomation(DataStore(address(1)), Reader(address(2)), OrderHandler(address(3)));
     }
 
-    function test_withdrawTokens() public {
+    function test_withdraw() public {
         s_token.mint(address(s_marketAutomation), 100);
-        IERC20[] memory tokens = new IERC20[](1);
-        tokens[0] = s_token;
-        s_marketAutomation.withdrawTokens(tokens, address(this));
+        s_marketAutomation.withdraw(s_token, address(this), 100);
         assertEq(s_token.balanceOf(address(this)), 100);
         assertEq(s_token.balanceOf(address(s_marketAutomation)), 0);
     }
 
-    function test_withdrawTokens_nonOwner_reverts() public {
+    function test_withdraw_nonOwner_reverts() public {
         s_token.mint(address(s_marketAutomation), 100);
-        IERC20[] memory tokens = new IERC20[](1);
-        tokens[0] = s_token;
         vm.prank(address(12345));
         vm.expectRevert("Ownable: caller is not the owner");
-        s_marketAutomation.withdrawTokens(tokens, address(this));
+        s_marketAutomation.withdraw(s_token, address(this), 100);
     }
 
     // TODO: Sad path tests
