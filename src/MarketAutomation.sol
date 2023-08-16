@@ -8,6 +8,7 @@ import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 import {Market} from "gmx-synthetics/market/Market.sol";
+import {Keys} from "gmx-synthetics/data/Keys.sol";
 // openzeppelin
 import {Ownable2Step} from "openzeppelin/access/Ownable2Step.sol";
 import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
@@ -23,7 +24,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     error MarketAutomation_IncorrectEventName(string eventName, string expectedEventName);
     error MarketAutomation_IncorrectOrderType(uint256 orderType);
     // Specific revert for offchain lookup
-    error DataStreamsLookup(string feedLabel, address[] feeds, string queryLabel, uint256 query, bytes data);
+    error DataStreamsLookup(string feedLabel, bytes32[] feedIds, string queryLabel, uint256 query, bytes data);
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "OrderCreated";
@@ -87,16 +88,17 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         // - swapPath[]
         // retrieve the Props struct from the DataStore. Use Props.marketToken to retrieve the feedId
         // and add to a list of feedIds.
-        address[] memory feedIds = new address[](swapPath.length + 1);
+        bytes32[] memory feedIds = new bytes32[](swapPath.length + 1);
         for (uint256 i = 0; i < feedIds.length; i++) {
             address marketToken;
+            // TODO: Any checks needed here?
             if (i == 0) {
                 marketToken = i_reader.getMarket(i_dataStore, market).marketToken;
             } else {
                 marketToken = i_reader.getMarket(i_dataStore, swapPath[i - 1]).marketToken;
             }
-            // TODO: Get FeedId from somewhere using marketToken
-            feedIds[i] = marketToken; // TODO: placeholder for now
+            // TODO: Is this correct?
+            feedIds[i] = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketToken));
         }
 
         // Construct the data for the data streams lookup error

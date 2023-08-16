@@ -92,5 +92,4 @@ contract MarketAutomationTest_checkLog is Test, TestData {
     function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {}
     // TODO
     function test_checkLog_MarketAutomation_IncorrectOrderType_reverts() public {}
-
 }
