@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {MarketAutomation, DataStore, Reader} from "../src/MarketAutomation.sol";
+import {MarketAutomation, DataStore, Reader, OrderHandler} from "../src/MarketAutomation.sol";
 import {TestData} from "./TestData.sol";
 import {ILogAutomation} from "../src/chainlink/ILogAutomation.sol";
 import {LibEventLogDecoder} from "../src/libraries/LibEventLogDecoder.sol";
@@ -18,7 +18,7 @@ contract MarketAutomationTest_withdrawTokens is Test {
 
     function setUp() public {
         s_token = new ERC20Mock();
-        s_marketAutomation = new MarketAutomation(DataStore(address(1)), Reader(address(2)));
+        s_marketAutomation = new MarketAutomation(DataStore(address(1)), Reader(address(2)), OrderHandler(address(3)));
     }
 
     function test_withdrawTokens() public {
@@ -46,7 +46,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
     MarketAutomation internal s_marketAutomation;
 
     function setUp() public {
-        s_marketAutomation = new MarketAutomation(DataStore(address(1)), Reader(address(2)));
+        s_marketAutomation = new MarketAutomation(DataStore(address(1)), Reader(address(2)), OrderHandler(address(3)));
     }
 
     //////////////

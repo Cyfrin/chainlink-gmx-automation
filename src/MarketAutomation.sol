@@ -9,6 +9,8 @@ import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 import {Market} from "gmx-synthetics/market/Market.sol";
 import {Keys} from "gmx-synthetics/data/Keys.sol";
+import {OracleUtils} from "gmx-synthetics/oracle/OracleUtils.sol";
+import {OrderHandler} from "gmx-synthetics/exchange/OrderHandler.sol";
 // openzeppelin
 import {Ownable2Step} from "openzeppelin/access/Ownable2Step.sol";
 import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
@@ -38,12 +40,14 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     // IMMUTABLES
     DataStore public immutable i_dataStore;
     Reader public immutable i_reader;
+    OrderHandler public immutable i_orderHandler;
 
     /// @param dataStore the DataStore contract address - immutable
     /// @param reader the Reader contract address - immutable
-    constructor(DataStore dataStore, Reader reader) Ownable2Step() {
+    constructor(DataStore dataStore, Reader reader, OrderHandler orderHandler) Ownable2Step() {
         i_dataStore = dataStore;
         i_reader = reader;
+        i_orderHandler = orderHandler;
     }
 
     /// @notice Withdraw any ERC20 tokens from the contract
@@ -98,6 +102,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
                 marketToken = i_reader.getMarket(i_dataStore, swapPath[i - 1]).marketToken;
             }
             // TODO: Is this correct?
+            // TODO: Are there any checks needed here?
             feedIds[i] = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketToken));
         }
 
@@ -114,11 +119,14 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         pure
         returns (bool, bytes memory)
     {
+        // TODO: Is this correct?
         return (true, abi.encode(values, extraData));
     }
 
     function performUpkeep(bytes calldata performData) external {
-        // TODO: waiting on exact execution functions.
-        // This will handle all 3 Market Automations
+        // TODO: Is this correct?
+        (bytes32 key, OracleUtils.SetPricesParams memory oracleParams) =
+            abi.decode(performData, (bytes32, OracleUtils.SetPricesParams));
+        i_orderHandler.executeOrder(key, oracleParams);
     }
 }
