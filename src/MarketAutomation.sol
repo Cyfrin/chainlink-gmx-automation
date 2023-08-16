@@ -112,6 +112,11 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
 
     // Acts like checkUpkeep in a normal Automation job, probably don't need to do anything.
     // Values: Each value in array has to be validated by a contract that chainlink provides.
+    // TODO: We need:
+    // - bytes32 key
+    // - address[] realtimeFeedTokens;
+    // - bytes[] realtimeFeedData;
+    // Where does this appear?
     function oracleCallback(bytes[] calldata values, bytes calldata extraData)
         external
         pure
