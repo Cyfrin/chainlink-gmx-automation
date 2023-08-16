@@ -128,6 +128,8 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
 
     function performUpkeep(bytes calldata performData) external {
         // TODO: Is this correct?
+        // This will receive (key, realtimeFeedTokens and realtimeFeedData), we need to build
+        // the SetPricesParams before calling executeOrder
         (bytes32 key, OracleUtils.SetPricesParams memory oracleParams) =
             abi.decode(performData, (bytes32, OracleUtils.SetPricesParams));
         i_orderHandler.executeOrder(key, oracleParams);

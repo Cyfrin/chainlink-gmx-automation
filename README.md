@@ -27,6 +27,7 @@
 4. (GMX) Are there any cases where the `DataStore.getBytes32` returns a zero address?
 5. (GMX) Once the addresses are retrieved from the event, is this the correct feedId retrieval: `i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketToken));`?
 6. (Chainlink) The DataStreamsLookup error definition has changed to account for `bytes32[] feedIds` instead of `address[] feeds`. Are there any ramifications to that on your end?
-7. (GMX) What exactly is called in `performUpkeep`? (Contract and function)
-8. (Chainlink) Is the data passed into `oracleCallback` encoded off-chain, ready to be passed into whatever function is called in `performUpkeep`?
-9. `withdraw` function allows the withdrawal of ERC20 tokens. Do we need to support native token also?
+7. (Chainlink) Is the data passed into `oracleCallback` encoded off-chain, ready to be passed into whatever function is called in `performUpkeep`?
+8. `withdraw` function allows the withdrawal of ERC20 tokens. Do we need to support native token also?
+9.  (Chainlink) What is the Verifier contract?
+10. (Both) Can I join a comms channel with GMX and Chainlink teams for technical Q's?
