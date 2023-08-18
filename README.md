@@ -11,23 +11,6 @@
 
 ## Open Questions
 
-1. (GMX) `LibEventDecoder` currently retrieves the following fields from the EventData. Are there any missing?
-   - bytes32 key,
-   - address market,
-   - uint256 orderType,
-   - address[] memory swapPath,
-   - address[] memory longTokenSwapPath,
-   - address[] memory shortTokenSwapPath
-2. (GMX) Currently, the `MarketAutomation` contract only uses the following fields from the EventData, does it need to account for all?
-   - key
-   - market
-   - orderType
-   - swapPath
-3. (GMX) Are there any cases where the `Reader.getMarket` returns a zero address?
-4. (GMX) Are there any cases where the `DataStore.getBytes32` returns a zero address?
-5. (GMX) Once the addresses are retrieved from the event, is this the correct feedId retrieval: `i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketToken));`?
-6. (Chainlink) The DataStreamsLookup error definition has changed to account for `bytes32[] feedIds` instead of `address[] feeds`. Are there any ramifications to that on your end?
-7. (Chainlink) Is the data passed into `oracleCallback` encoded off-chain, ready to be passed into whatever function is called in `performUpkeep`?
-8. `withdraw` function allows the withdrawal of ERC20 tokens. Do we need to support native token also?
-9.  (Chainlink) What is the Verifier contract?
-10. (Both) Can I join a comms channel with GMX and Chainlink teams for technical Q's?
+1. (Chainlink) The DataStreamsLookup error definition has changed to account for `bytes32[] feedIds` instead of `address[] feeds`. Are there any ramifications to that on your end?
+2. (Chainlink) Is the data passed into `oracleCallback` encoded off-chain, ready to be passed into whatever function is called in `performUpkeep`?
+3.  (Chainlink) What is the Verifier contract?

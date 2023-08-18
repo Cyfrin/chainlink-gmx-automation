@@ -14,6 +14,7 @@ import {OrderHandler} from "gmx-synthetics/exchange/OrderHandler.sol";
 // openzeppelin
 import {Ownable2Step} from "openzeppelin/access/Ownable2Step.sol";
 import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
 
 /// @title Market Automation - Handles Market Decrease, Increase and Swap cases
 /// @author Alex Roan - Cyfrin (@alexroan)
@@ -21,6 +22,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     using LibEventLogDecoder for ILogAutomation.Log;
     using LibEventLogDecoder for EventUtils.EventLogData;
     using SafeERC20 for IERC20;
+    using EnumerableSet for EnumerableSet.Bytes32Set;
 
     // ERRORS
     error MarketAutomation_IncorrectEventName(string eventName, string expectedEventName);
@@ -42,6 +44,10 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     Reader public immutable i_reader;
     OrderHandler public immutable i_orderHandler;
 
+    // STORAGE
+    // This should be empty after every transaction. It is filled and cleared each time checkLog is called.
+    EnumerableSet.Bytes32Set private s_feedIdSet;
+
     /// @param dataStore the DataStore contract address - immutable
     /// @param reader the Reader contract address - immutable
     constructor(DataStore dataStore, Reader reader, OrderHandler orderHandler) Ownable2Step() {
@@ -49,6 +55,10 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         i_reader = reader;
         i_orderHandler = orderHandler;
     }
+
+    ///////////////////////////
+    // OWNABLE FUNCTIONS
+    ///////////////////////////
 
     /// @notice Withdraw any ERC20 tokens from the contract
     /// @dev Only callable by the owner
@@ -58,10 +68,15 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         token.safeTransfer(to, amount);
     }
 
+    ///////////////////////////
+    // CHECK LOG FUNCTIONS
+    ///////////////////////////
+
     /// @notice Retrieve relevant information from the log and perform a data streams lookup
     /// @dev Reverts with custom errors if the event name is not equal to the expected event name (OrderCreated), or if the orderType is not equal to the expected orderType (4)
     /// @dev In the success case, reverts with DataStreamsLookup error containing relevant information for the data streams lookup
-    function checkLog(ILogAutomation.Log calldata log, bytes calldata) external view returns (bool, bytes memory) {
+    /// @dev This function is only ever simulated off-chain, and is very gas intensive.
+    function checkLog(ILogAutomation.Log calldata log, bytes calldata) external returns (bool, bytes memory) {
         // Decode Event Log 2
         (
             , //msgSender,
@@ -90,24 +105,62 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         // - swapPath[]
         // retrieve the Props struct from the DataStore. Use Props.marketToken to retrieve the feedId
         // and add to a list of feedIds.
-        bytes32[] memory feedIds = new bytes32[](swapPath.length + 1);
-        for (uint256 i = 0; i < feedIds.length; i++) {
-            address marketToken;
-            // TODO: Any checks needed here?
-            if (i == 0) {
-                marketToken = i_reader.getMarket(i_dataStore, market).marketToken;
-            } else {
-                marketToken = i_reader.getMarket(i_dataStore, swapPath[i - 1]).marketToken;
-            }
-            // TODO: Is this correct?
-            // TODO: Are there any checks needed here?
-            feedIds[i] = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketToken));
+
+        // Push the market feedId to the set
+        Market.Props memory marketProps = i_reader.getMarket(i_dataStore, market);
+        _pushPropFeedIdsToSet(marketProps);
+
+        // Push the swapPath feedIds to the set
+        for (uint256 i = 0; i < swapPath.length; i++) {
+            Market.Props memory swapPathProps = i_reader.getMarket(i_dataStore, swapPath[i]);
+            _pushPropFeedIdsToSet(swapPathProps);
         }
+
+        // Clear the feedIdSet
+        _clearFeedIdSet();
 
         // Construct the data for the data streams lookup error
         revert DataStreamsLookup(
-            STRING_DATASTREAMS_FEEDLABEL, feedIds, STRING_DATASTREAMS_QUERYLABEL, log.blockNumber, abi.encode(key)
+            STRING_DATASTREAMS_FEEDLABEL,
+            s_feedIdSet.values(),
+            STRING_DATASTREAMS_QUERYLABEL,
+            log.blockNumber,
+            abi.encode(key)
         );
+    }
+
+    /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the feedIdSet
+    /// @dev Does not allow for duplicate feedIds or zero address feedIds
+    /// @param marketProps the Market Props struct to retrieve the feedIds from
+    function _pushPropFeedIdsToSet(Market.Props memory marketProps) private {
+        if (marketProps.indexToken != address(0)) {
+            bytes32 indexTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken));
+            if (!s_feedIdSet.contains(indexTokenFeedId)) {
+                s_feedIdSet.add(indexTokenFeedId);
+            }
+        }
+
+        if (marketProps.longToken != address(0)) {
+            bytes32 longTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken));
+            if (!s_feedIdSet.contains(longTokenFeedId)) {
+                s_feedIdSet.add(longTokenFeedId);
+            }
+        }
+
+        if (marketProps.shortToken != address(0)) {
+            bytes32 shortTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken));
+            if (!s_feedIdSet.contains(shortTokenFeedId)) {
+                s_feedIdSet.add(shortTokenFeedId);
+            }
+        }
+    }
+
+    /// @notice Clears the s_feedIdSet
+    /// @dev Iterates over the feedIdSet and removes each feedId
+    function _clearFeedIdSet() private {
+        for (uint256 i = 0; i < s_feedIdSet.length(); i++) {
+            s_feedIdSet.remove(s_feedIdSet.at(i));
+        }
     }
 
     // Acts like checkUpkeep in a normal Automation job, probably don't need to do anything.
