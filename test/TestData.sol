@@ -14,6 +14,11 @@ contract TestData {
     using EventUtils for EventUtils.BytesItems;
     using EventUtils for EventUtils.StringItems;
 
+    string internal constant ARBITRUM_GOERLI_URL_LABEL = "ARBITRUM_GOERLI_URL";
+    string internal constant DATA_STORE_LABEL = "DATA_STORE";
+    string internal constant READER_LABEL = "READER";
+    string internal constant ORDER_HANDLER_LABEL = "ORDER_HANDLER";
+
     function _generateValidLog(
         address msgSender,
         uint256 blockNumber,

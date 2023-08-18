@@ -46,7 +46,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
 
     // STORAGE
     // This should be empty after every transaction. It is filled and cleared each time checkLog is called.
-    EnumerableSet.Bytes32Set private s_feedIdSet;
+    EnumerableSet.Bytes32Set internal s_feedIdSet;
 
     /// @param dataStore the DataStore contract address - immutable
     /// @param reader the Reader contract address - immutable
@@ -117,15 +117,11 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         }
 
         // Clear the feedIdSet
-        _clearFeedIdSet();
+        bytes32[] memory feedIds = _flushFeedIdSet();
 
         // Construct the data for the data streams lookup error
         revert DataStreamsLookup(
-            STRING_DATASTREAMS_FEEDLABEL,
-            s_feedIdSet.values(),
-            STRING_DATASTREAMS_QUERYLABEL,
-            log.blockNumber,
-            abi.encode(key)
+            STRING_DATASTREAMS_FEEDLABEL, feedIds, STRING_DATASTREAMS_QUERYLABEL, log.blockNumber, abi.encode(key)
         );
     }
 
@@ -135,31 +131,35 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     function _pushPropFeedIdsToSet(Market.Props memory marketProps) private {
         if (marketProps.indexToken != address(0)) {
             bytes32 indexTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken));
-            if (!s_feedIdSet.contains(indexTokenFeedId)) {
+            if (indexTokenFeedId != bytes32(0) && !s_feedIdSet.contains(indexTokenFeedId)) {
                 s_feedIdSet.add(indexTokenFeedId);
             }
         }
 
         if (marketProps.longToken != address(0)) {
             bytes32 longTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken));
-            if (!s_feedIdSet.contains(longTokenFeedId)) {
+            if (longTokenFeedId != bytes32(0) && !s_feedIdSet.contains(longTokenFeedId)) {
                 s_feedIdSet.add(longTokenFeedId);
             }
         }
 
         if (marketProps.shortToken != address(0)) {
             bytes32 shortTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken));
-            if (!s_feedIdSet.contains(shortTokenFeedId)) {
+            if (shortTokenFeedId != bytes32(0) && !s_feedIdSet.contains(shortTokenFeedId)) {
                 s_feedIdSet.add(shortTokenFeedId);
             }
         }
     }
 
-    /// @notice Clears the s_feedIdSet
-    /// @dev Iterates over the feedIdSet and removes each feedId
-    function _clearFeedIdSet() private {
+    /// @notice Returns all values from and clears the s_feedIdSet
+    /// @dev Iterates over the feedIdSet, and removes each feedId and returns them as an array
+    /// @return feedIds the feedIds that were in the feedIdSet
+    function _flushFeedIdSet() private returns (bytes32[] memory feedIds) {
+        feedIds = new bytes32[](s_feedIdSet.length());
         for (uint256 i = 0; i < s_feedIdSet.length(); i++) {
-            s_feedIdSet.remove(s_feedIdSet.at(i));
+            bytes32 value = s_feedIdSet.at(i);
+            s_feedIdSet.remove(value);
+            feedIds[i] = value;
         }
     }
 

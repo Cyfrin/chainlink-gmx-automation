@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {MarketAutomation, DataStore, Reader, OrderHandler} from "../src/MarketAutomation.sol";
+import {MarketAutomation, DataStore, Reader, OrderHandler, Market} from "../src/MarketAutomation.sol";
 import {TestData} from "./TestData.sol";
 import {ILogAutomation} from "../src/chainlink/ILogAutomation.sol";
 import {LibEventLogDecoder} from "../src/libraries/LibEventLogDecoder.sol";
@@ -39,15 +39,67 @@ contract MarketAutomationTest_withdraw is Test {
 }
 
 contract MarketAutomationTest_checkLog is Test, TestData {
+    uint256 internal s_forkId;
+
+    DataStore internal s_dataStore;
+    Reader internal s_reader;
+    OrderHandler internal s_orderHandler;
     MarketAutomation internal s_marketAutomation;
 
+    Market.Props[] internal s_marketProps;
+    ILogAutomation.Log internal s_log;
+
+    bytes32 internal constant KEY = keccak256(abi.encode("MarketAutomationTest_checkLog"));
+
     function setUp() public {
-        s_marketAutomation = new MarketAutomation(DataStore(address(1)), Reader(address(2)), OrderHandler(address(3)));
+        s_forkId = vm.createSelectFork(vm.envString(ARBITRUM_GOERLI_URL_LABEL));
+        s_dataStore = DataStore(vm.envAddress(DATA_STORE_LABEL));
+        s_reader = Reader(vm.envAddress(READER_LABEL));
+        s_orderHandler = OrderHandler(vm.envAddress(ORDER_HANDLER_LABEL));
+        s_marketAutomation = new MarketAutomation(s_dataStore, s_reader, s_orderHandler);
+        Market.Props[] memory marketProps = s_reader.getMarkets(s_dataStore, 0, 100);
+        for (uint256 i = 0; i < marketProps.length; i++) {
+            s_marketProps.push(marketProps[i]);
+        }
+
+        address market = s_marketProps[0].marketToken;
+        address[] memory swapPath = new address[](s_marketProps.length);
+        for (uint256 i = 0; i < s_marketProps.length; i++) {
+            swapPath[i] = s_marketProps[i].marketToken;
+        }
+        s_log = _generateValidLog(
+            address(this),
+            block.number,
+            LibEventLogDecoder.EventLog2.selector,
+            "OrderCreated",
+            market,
+            swapPath,
+            KEY,
+            2,
+            swapPath,
+            swapPath
+        );
     }
 
     //////////////
     // UNIT TESTS
     //////////////
+
+    // TODO
+    function test_checkLog_success() public {
+        s_marketAutomation.checkLog(s_log, "");
+    }
+    // TODO
+
+    function test_checkLog_LibEventLogDecoder_IncorrectLogSelector_reverts() public {}
+    // TODO
+    function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {}
+    // TODO
+    function test_checkLog_MarketAutomation_IncorrectOrderType_reverts() public {}
+
+    ///////////////////////////
+    // FUZZ TESTS
+    ///////////////////////////
 
     function test_fuzz_checkLog_revertsInEveryCase(
         address msgSender,
@@ -79,13 +131,4 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         vm.expectRevert();
         s_marketAutomation.checkLog(log, data);
     }
-
-    // TODO
-    function test_checkLog_success() public {}
-    // TODO
-    function test_checkLog_LibEventLogDecoder_IncorrectLogSelector_reverts() public {}
-    // TODO
-    function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {}
-    // TODO
-    function test_checkLog_MarketAutomation_IncorrectOrderType_reverts() public {}
 }
