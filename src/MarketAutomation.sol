@@ -69,7 +69,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     }
 
     ///////////////////////////
-    // CHECK LOG FUNCTIONS
+    // SIMULATED FUNCTIONS
     ///////////////////////////
 
     /// @notice Retrieve relevant information from the log and perform a data streams lookup
@@ -162,6 +162,10 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
             feedIds[i] = value;
         }
     }
+
+    ///////////////////////////
+    // UPKEEP FUNCTIONS
+    ///////////////////////////
 
     // Acts like checkUpkeep in a normal Automation job, probably don't need to do anything.
     // Values: Each value in array has to be validated by a contract that chainlink provides.
