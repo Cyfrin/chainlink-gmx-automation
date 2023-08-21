@@ -13,7 +13,7 @@
 1. What should the Lookup revert error be? (name and structure)
 2. What should the functions be called? Is `checkLog`, `oracleCallback` and `performUpkeep` correct?
 3. What is the relationship between the fields in the Lookup error, and the input to oracleCallback?
-4. The data we need should be:
+4. The data we need in `performData` should be:
    1. `key` : emitted in `checkLog`
    2. `realtimeFeedTokens` : emitted in `checkLog`
    3. `realtimeFeedData` : Where does this come from, and where to access it?
