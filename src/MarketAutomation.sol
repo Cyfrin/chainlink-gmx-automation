@@ -69,7 +69,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     }
 
     ///////////////////////////
-    // SIMULATED FUNCTIONS
+    // AUTOMATION FUNCTIONS
     ///////////////////////////
 
     /// @notice Retrieve relevant information from the log and perform a data streams lookup
@@ -125,6 +125,35 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         );
     }
 
+    // Acts like checkUpkeep in a normal Automation job, probably don't need to do anything.
+    // Values: Each value in array has to be validated by a contract that chainlink provides.
+    // TODO: We need:
+    // - bytes32 key
+    // - address[] realtimeFeedTokens;
+    // - bytes[] realtimeFeedData;
+    // Where does this appear?
+    function oracleCallback(bytes[] calldata values, bytes calldata extraData)
+        external
+        pure
+        returns (bool, bytes memory)
+    {
+        // TODO: Is this correct?
+        return (true, abi.encode(values, extraData));
+    }
+
+    function performUpkeep(bytes calldata performData) external {
+        (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
+        // TODO: This will receive (key, realtimeFeedTokens and realtimeFeedData), we need to build
+        // the SetPricesParams before calling executeOrder
+        (bytes32 key, OracleUtils.SetPricesParams memory oracleParams) =
+            abi.decode(performData, (bytes32, OracleUtils.SetPricesParams));
+        i_orderHandler.executeOrder(key, oracleParams);
+    }
+
+    ///////////////////////////
+    // INTERNAL FUNCTIONS
+    ///////////////////////////
+
     /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the feedIdSet
     /// @dev Does not allow for duplicate feedIds or zero address feedIds
     /// @param marketProps the Market Props struct to retrieve the feedIds from
@@ -161,33 +190,5 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
             s_feedIdSet.remove(value);
             feedIds[i] = value;
         }
-    }
-
-    ///////////////////////////
-    // UPKEEP FUNCTIONS
-    ///////////////////////////
-
-    // Acts like checkUpkeep in a normal Automation job, probably don't need to do anything.
-    // Values: Each value in array has to be validated by a contract that chainlink provides.
-    // TODO: We need:
-    // - bytes32 key
-    // - address[] realtimeFeedTokens;
-    // - bytes[] realtimeFeedData;
-    // Where does this appear?
-    function oracleCallback(bytes[] calldata values, bytes calldata extraData)
-        external
-        pure
-        returns (bool, bytes memory)
-    {
-        // TODO: Is this correct?
-        return (true, abi.encode(values, extraData));
-    }
-
-    function performUpkeep(bytes calldata performData) external {
-        // TODO: This will receive (key, realtimeFeedTokens and realtimeFeedData), we need to build
-        // the SetPricesParams before calling executeOrder
-        (bytes32 key, OracleUtils.SetPricesParams memory oracleParams) =
-            abi.decode(performData, (bytes32, OracleUtils.SetPricesParams));
-        i_orderHandler.executeOrder(key, oracleParams);
     }
 }
