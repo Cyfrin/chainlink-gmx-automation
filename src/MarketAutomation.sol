@@ -15,10 +15,12 @@ import {OrderHandler} from "gmx-synthetics/exchange/OrderHandler.sol";
 import {Ownable2Step} from "openzeppelin/access/Ownable2Step.sol";
 import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
+// chainlink
+import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
 
 /// @title Market Automation - Handles Market Decrease, Increase and Swap cases
 /// @author Alex Roan - Cyfrin (@alexroan)
-contract MarketAutomation is ILogAutomation, Ownable2Step {
+contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Ownable2Step {
     using LibEventLogDecoder for ILogAutomation.Log;
     using LibEventLogDecoder for EventUtils.EventLogData;
     using SafeERC20 for IERC20;
@@ -27,8 +29,6 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     // ERRORS
     error MarketAutomation_IncorrectEventName(string eventName, string expectedEventName);
     error MarketAutomation_IncorrectOrderType(uint256 orderType);
-    // Specific revert for offchain lookup
-    error DataStreamsLookup(string feedLabel, bytes32[] feedIds, string queryLabel, uint256 query, bytes data);
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "OrderCreated";
@@ -36,7 +36,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     uint256 public constant EXPECTED_LOG_EVENTDATA_ORDERTYPE_0 = 0;
     uint256 public constant EXPECTED_LOG_EVENTDATA_ORDERTYPE_2 = 2;
     uint256 public constant EXPECTED_LOG_EVENTDATA_ORDERTYPE_4 = 4;
-    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDHex";
+    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDStr";
     string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
 
     // IMMUTABLES
@@ -117,10 +117,10 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
         }
 
         // Clear the feedIdSet
-        bytes32[] memory feedIds = _flushFeedIdSet();
+        string[] memory feedIds = _flushFeedIdSet();
 
         // Construct the data for the data streams lookup error
-        revert DataStreamsLookup(
+        revert FeedLookup(
             STRING_DATASTREAMS_FEEDLABEL, feedIds, STRING_DATASTREAMS_QUERYLABEL, log.blockNumber, abi.encode(key)
         );
     }
@@ -132,7 +132,7 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     // - address[] realtimeFeedTokens;
     // - bytes[] realtimeFeedData;
     // Where does this appear?
-    function oracleCallback(bytes[] calldata values, bytes calldata extraData)
+    function checkCallback(bytes[] calldata values, bytes calldata extraData)
         external
         pure
         returns (bool, bytes memory)
@@ -183,12 +183,12 @@ contract MarketAutomation is ILogAutomation, Ownable2Step {
     /// @notice Returns all values from and clears the s_feedIdSet
     /// @dev Iterates over the feedIdSet, and removes each feedId and returns them as an array
     /// @return feedIds the feedIds that were in the feedIdSet
-    function _flushFeedIdSet() private returns (bytes32[] memory feedIds) {
-        feedIds = new bytes32[](s_feedIdSet.length());
+    function _flushFeedIdSet() private returns (string[] memory feedIds) {
+        feedIds = new string[](s_feedIdSet.length());
         for (uint256 i = 0; i < s_feedIdSet.length(); i++) {
             bytes32 value = s_feedIdSet.at(i);
             s_feedIdSet.remove(value);
-            feedIds[i] = value;
+            feedIds[i] = string(abi.encode(value));
         }
     }
 }

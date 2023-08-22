@@ -9,3 +9,4 @@ prb-math/=lib/gmx-synthetics/node_modules/prb-math/
 solidity-code-metrics/=lib/gmx-synthetics/node_modules/
 lib/forge-std:ds-test/=lib/forge-std/lib/ds-test/src/
 openzeppelin/=lib/openzeppelin-contracts/contracts/
+chainlink/=lib/chainlink/contracts/src/v0.8/

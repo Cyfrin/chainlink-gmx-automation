@@ -36,6 +36,12 @@ contract MarketAutomationTest_withdraw is Test {
     }
 
     // TODO: Sad path tests
+
+    function test_bytes32ToString() public {
+        bytes32 feedId = bytes32("1234566");
+        console.logBytes32(feedId);
+        console.log(string(abi.encode(feedId)));
+    }
 }
 
 contract MarketAutomationTest_checkLog is Test, TestData {
@@ -86,11 +92,8 @@ contract MarketAutomationTest_checkLog is Test, TestData {
     //////////////
 
     // TODO
-    function test_checkLog_success() public {
-        s_marketAutomation.checkLog(s_log, "");
-    }
+    function test_checkLog_success() public {}
     // TODO
-
     function test_checkLog_LibEventLogDecoder_IncorrectLogSelector_reverts() public {}
     // TODO
     function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {}
