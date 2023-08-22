@@ -125,13 +125,8 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Owna
         );
     }
 
-    // Acts like checkUpkeep in a normal Automation job, probably don't need to do anything.
-    // Values: Each value in array has to be validated by a contract that chainlink provides.
-    // TODO: We need:
-    // - bytes32 key
-    // - address[] realtimeFeedTokens;
-    // - bytes[] realtimeFeedData;
-    // Where does this appear?
+    /// @notice Check the callback
+    /// @dev Encode the values and extra data into performData and return true
     function checkCallback(bytes[] calldata values, bytes calldata extraData)
         external
         pure
@@ -141,18 +136,37 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Owna
         return (true, abi.encode(values, extraData));
     }
 
+    /// @notice Perform the upkeep
+    /// @param performData the data returned from checkCallback. Encoded:
+    ///     - bytes[] values. Each value contains a signed report by the DON, and must be decoded:
+    ///         - bytes32[3] memory reportContext,
+    ///         - bytes memory reportData, <- This is where we can access the token and price
+    ///         - bytes32[] memory rs,
+    ///         - bytes32[] memory ss,
+    ///         - bytes32 rawVs
+    ///     - bytes extraData <- This is where the key is
+    /// @dev Decode the performData and call executeOrder
     function performUpkeep(bytes calldata performData) external {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
-        // TODO: This will receive (key, realtimeFeedTokens and realtimeFeedData), we need to build
-        // the SetPricesParams before calling executeOrder
-        (bytes32 key, OracleUtils.SetPricesParams memory oracleParams) =
-            abi.decode(performData, (bytes32, OracleUtils.SetPricesParams));
+
+        bytes32 key = abi.decode(extraData, (bytes32));
+
+        for (uint256 i = 0; i < values.length; i++) {
+            // TODO
+        }
+
         i_orderHandler.executeOrder(key, oracleParams);
     }
 
     ///////////////////////////
     // INTERNAL FUNCTIONS
     ///////////////////////////
+
+    /// TODO: Alter this so that it just returns the tokens and data (prices)
+    /// TODO: After that, create a helper/library that does this for Chainlink
+    function _decodeReportData(bytes memory signedReport) private returns (bytes memory reportData) {
+        (, reportData,,,) = abi.decode(signedReport, (bytes32[3], bytes, bytes32[], bytes32[], bytes32));
+    }
 
     /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the feedIdSet
     /// @dev Does not allow for duplicate feedIds or zero address feedIds
