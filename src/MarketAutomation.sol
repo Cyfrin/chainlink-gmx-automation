@@ -2,29 +2,23 @@
 pragma solidity 0.8.19;
 
 import {LibEventLogDecoder} from "./libraries/LibEventLogDecoder.sol";
+import {GMXAutomationBase} from "./GMXAutomationBase.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 import {Market} from "gmx-synthetics/market/Market.sol";
-import {Keys} from "gmx-synthetics/data/Keys.sol";
 import {OracleUtils} from "gmx-synthetics/oracle/OracleUtils.sol";
 import {OrderHandler} from "gmx-synthetics/exchange/OrderHandler.sol";
-// openzeppelin
-import {Ownable2Step} from "openzeppelin/access/Ownable2Step.sol";
-import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
-import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
 // chainlink
 import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 
 /// @title Market Automation - Handles Market Decrease, Increase and Swap cases
 /// @author Alex Roan - Cyfrin (@alexroan)
-contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Ownable2Step {
+contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXAutomationBase {
     using LibEventLogDecoder for Log;
     using LibEventLogDecoder for EventUtils.EventLogData;
-    using SafeERC20 for IERC20;
-    using EnumerableSet for EnumerableSet.Bytes32Set;
 
     // ERRORS
     error MarketAutomation_IncorrectEventName(string eventName, string expectedEventName);
@@ -40,32 +34,13 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Owna
     string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
 
     // IMMUTABLES
-    DataStore public immutable i_dataStore;
-    Reader public immutable i_reader;
     OrderHandler public immutable i_orderHandler;
-
-    // STORAGE
-    // This should be empty after every transaction. It is filled and cleared each time checkLog is called.
-    EnumerableSet.Bytes32Set internal s_feedIdSet;
 
     /// @param dataStore the DataStore contract address - immutable
     /// @param reader the Reader contract address - immutable
-    constructor(DataStore dataStore, Reader reader, OrderHandler orderHandler) Ownable2Step() {
-        i_dataStore = dataStore;
-        i_reader = reader;
+    /// @param orderHandler the OrderHandler contract address - immutable
+    constructor(DataStore dataStore, Reader reader, OrderHandler orderHandler) GMXAutomationBase(dataStore, reader) {
         i_orderHandler = orderHandler;
-    }
-
-    ///////////////////////////
-    // OWNABLE FUNCTIONS
-    ///////////////////////////
-
-    /// @notice Withdraw any ERC20 tokens from the contract
-    /// @dev Only callable by the owner
-    /// @param token the token to withdraw
-    /// @param to the address to withdraw the tokens to
-    function withdraw(IERC20 token, address to, uint256 amount) external onlyOwner {
-        token.safeTransfer(to, amount);
     }
 
     ///////////////////////////
@@ -166,43 +141,5 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Owna
     /// TODO: After that, create a helper/library that does this for Chainlink
     function _decodeReportData(bytes memory signedReport) private returns (bytes memory reportData) {
         (, reportData,,,) = abi.decode(signedReport, (bytes32[3], bytes, bytes32[], bytes32[], bytes32));
-    }
-
-    /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the feedIdSet
-    /// @dev Does not allow for duplicate feedIds or zero address feedIds
-    /// @param marketProps the Market Props struct to retrieve the feedIds from
-    function _pushPropFeedIdsToSet(Market.Props memory marketProps) private {
-        if (marketProps.indexToken != address(0)) {
-            bytes32 indexTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken));
-            if (indexTokenFeedId != bytes32(0) && !s_feedIdSet.contains(indexTokenFeedId)) {
-                s_feedIdSet.add(indexTokenFeedId);
-            }
-        }
-
-        if (marketProps.longToken != address(0)) {
-            bytes32 longTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken));
-            if (longTokenFeedId != bytes32(0) && !s_feedIdSet.contains(longTokenFeedId)) {
-                s_feedIdSet.add(longTokenFeedId);
-            }
-        }
-
-        if (marketProps.shortToken != address(0)) {
-            bytes32 shortTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken));
-            if (shortTokenFeedId != bytes32(0) && !s_feedIdSet.contains(shortTokenFeedId)) {
-                s_feedIdSet.add(shortTokenFeedId);
-            }
-        }
-    }
-
-    /// @notice Returns all values from and clears the s_feedIdSet
-    /// @dev Iterates over the feedIdSet, and removes each feedId and returns them as an array
-    /// @return feedIds the feedIds that were in the feedIdSet
-    function _flushFeedIdSet() private returns (string[] memory feedIds) {
-        feedIds = new string[](s_feedIdSet.length());
-        for (uint256 i = 0; i < s_feedIdSet.length(); i++) {
-            bytes32 value = s_feedIdSet.at(i);
-            s_feedIdSet.remove(value);
-            feedIds[i] = string(abi.encode(value));
-        }
     }
 }
