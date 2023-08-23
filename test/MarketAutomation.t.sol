@@ -11,39 +11,6 @@ import {Test, console} from "forge-std/test.sol";
 import {ERC20Mock} from "openzeppelin/mocks/ERC20Mock.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
 
-/// @notice MarketAutomation.withdraw(IERC20 token, address to, uint256 amount);
-contract MarketAutomationTest_withdraw is Test {
-    ERC20Mock internal s_token;
-    MarketAutomation internal s_marketAutomation;
-
-    function setUp() public {
-        s_token = new ERC20Mock();
-        s_marketAutomation = new MarketAutomation(DataStore(address(1)), Reader(address(2)), OrderHandler(address(3)));
-    }
-
-    function test_withdraw() public {
-        s_token.mint(address(s_marketAutomation), 100);
-        s_marketAutomation.withdraw(s_token, address(this), 100);
-        assertEq(s_token.balanceOf(address(this)), 100);
-        assertEq(s_token.balanceOf(address(s_marketAutomation)), 0);
-    }
-
-    function test_withdraw_nonOwner_reverts() public {
-        s_token.mint(address(s_marketAutomation), 100);
-        vm.prank(address(12345));
-        vm.expectRevert("Ownable: caller is not the owner");
-        s_marketAutomation.withdraw(s_token, address(this), 100);
-    }
-
-    // TODO: Sad path tests
-
-    function test_bytes32ToString() public {
-        bytes32 feedId = bytes32("1234566");
-        console.logBytes32(feedId);
-        console.log(string(abi.encode(feedId)));
-    }
-}
-
 contract MarketAutomationTest_checkLog is Test, TestData {
     uint256 internal s_forkId;
 

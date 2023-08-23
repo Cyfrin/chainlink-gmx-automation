@@ -78,10 +78,12 @@ contract GMXAutomationBase is Ownable2Step {
     /// @return feedIds the feedIds that were in the feedIdSet
     function _flushFeedIdSet() internal returns (string[] memory feedIds) {
         feedIds = new string[](s_feedIdSet.length());
-        for (uint256 i = 0; i < s_feedIdSet.length(); i++) {
-            bytes32 value = s_feedIdSet.at(i);
+        uint256 count = 0;
+        while (s_feedIdSet.length() > 0) {
+            bytes32 value = s_feedIdSet.at(s_feedIdSet.length() - 1);
             s_feedIdSet.remove(value);
-            feedIds[i] = string(abi.encode(value));
+            feedIds[count] = string(abi.encode(value));
+            count++;
         }
     }
 }
