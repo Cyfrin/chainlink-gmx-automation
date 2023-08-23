@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {ILogAutomation} from "../chainlink/ILogAutomation.sol";
+import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
@@ -38,14 +38,14 @@ library LibEventLogDecoder {
     // FUNCTIONS
     /////////////
 
-    /// @notice Decode an EventLog1 or EventLog2 event from a ILogAutomation.Log
+    /// @notice Decode an EventLog1 or EventLog2 event from a Log
     /// @dev This function reverts if the log is not an EventLog1 or EventLog2 event
     /// @dev We only decode non-indexed data from the log here, hence why eventNameHash, topic1 (and topic2) is not returned.
     /// @param log the log to decode
     /// @return msgSender the sender of the transaction that emitted the log
     /// @return eventName the name of the event
     /// @return eventData the EventUtils EventLogData struct
-    function decodeEventLog(ILogAutomation.Log memory log)
+    function decodeEventLog(Log memory log)
         internal
         pure
         returns (address msgSender, string memory eventName, EventUtils.EventLogData memory eventData)

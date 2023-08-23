@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {ILogAutomation} from "./chainlink/ILogAutomation.sol";
 import {LibEventLogDecoder} from "./libraries/LibEventLogDecoder.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
@@ -17,11 +16,12 @@ import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
 // chainlink
 import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
+import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 
 /// @title Market Automation - Handles Market Decrease, Increase and Swap cases
 /// @author Alex Roan - Cyfrin (@alexroan)
 contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Ownable2Step {
-    using LibEventLogDecoder for ILogAutomation.Log;
+    using LibEventLogDecoder for Log;
     using LibEventLogDecoder for EventUtils.EventLogData;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.Bytes32Set;
@@ -76,7 +76,7 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Owna
     /// @dev Reverts with custom errors if the event name is not equal to the expected event name (OrderCreated), or if the orderType is not equal to the expected orderType (4)
     /// @dev In the success case, reverts with DataStreamsLookup error containing relevant information for the data streams lookup
     /// @dev This function is only ever simulated off-chain, and is very gas intensive.
-    function checkLog(ILogAutomation.Log calldata log, bytes calldata) external returns (bool, bytes memory) {
+    function checkLog(Log calldata log) external returns (bool, bytes memory) {
         // Decode Event Log 2
         (
             , //msgSender,
@@ -155,7 +155,7 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, Owna
             // TODO
         }
 
-        i_orderHandler.executeOrder(key, oracleParams);
+        // i_orderHandler.executeOrder(key, oracleParams);
     }
 
     ///////////////////////////

@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import {MarketAutomation, DataStore, Reader, OrderHandler, Market} from "../src/MarketAutomation.sol";
 import {TestData} from "./TestData.sol";
-import {ILogAutomation} from "../src/chainlink/ILogAutomation.sol";
+import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 import {LibEventLogDecoder} from "../src/libraries/LibEventLogDecoder.sol";
 // forge-std
 import {Test, console} from "forge-std/test.sol";
@@ -53,7 +53,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
     MarketAutomation internal s_marketAutomation;
 
     Market.Props[] internal s_marketProps;
-    ILogAutomation.Log internal s_log;
+    Log internal s_log;
 
     bytes32 internal constant KEY = keccak256(abi.encode("MarketAutomationTest_checkLog"));
 
@@ -114,12 +114,11 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         bytes32 key,
         uint256 orderType,
         address[] memory longTokenSwapPath,
-        address[] memory shortTokenSwapPath,
-        bytes calldata data
+        address[] memory shortTokenSwapPath
     ) public {
         bytes32 logSelector =
             logSelectorIndex ? LibEventLogDecoder.EventLog1.selector : LibEventLogDecoder.EventLog2.selector;
-        ILogAutomation.Log memory log = _generateValidLog(
+        Log memory log = _generateValidLog(
             msgSender,
             blockNumber,
             logSelector,
@@ -132,6 +131,6 @@ contract MarketAutomationTest_checkLog is Test, TestData {
             shortTokenSwapPath
         );
         vm.expectRevert();
-        s_marketAutomation.checkLog(log, data);
+        s_marketAutomation.checkLog(log);
     }
 }

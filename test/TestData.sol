@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {ILogAutomation} from "../src/chainlink/ILogAutomation.sol";
+import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
@@ -30,10 +30,10 @@ contract TestData {
         uint256 orderType,
         address[] memory longTokenSwapPath,
         address[] memory shortTokenSwapPath
-    ) internal view returns (ILogAutomation.Log memory log) {
+    ) internal view returns (Log memory log) {
         bytes32[] memory topics = new bytes32[](4);
         topics[0] = logSelector;
-        log = ILogAutomation.Log({
+        log = Log({
             index: 1,
             txIndex: 2,
             txHash: keccak256("1"),
@@ -91,14 +91,14 @@ contract TestData {
         eventData.bytes32Items.setItem(0, "key", key);
     }
 
-    function _realEventLog2Data_orderType5() internal view returns (ILogAutomation.Log memory log) {
+    function _realEventLog2Data_orderType5() internal view returns (Log memory log) {
         // REAL DATA FROM HERE: https://arbiscan.io/tx/0x04be86c99bc49a540eec1a936a17e975678da6fbd043e9b382cd3fe0cf33667e#eventlog
         bytes32[] memory topics = new bytes32[](4);
         topics[0] = 0x468a25a7ba624ceea6e540ad6f49171b52495b648417ae91bca21676d8a24dc5;
         topics[1] = 0xa7427759bfd3b941f14e687e129519da3c9b0046c5b9aaa290bb1dede63753b3;
         topics[2] = 0x464126dfccf7f941b1c81d99fa95f2cf7c27d88ec836f46de62dbf777a5bdab8;
         topics[3] = 0x000000000000000000000000542812580aae3d6d6793d5ea3427a26e3766dc77;
-        log = ILogAutomation.Log({
+        log = Log({
             index: 1,
             txIndex: 2,
             txHash: bytes32("1"),

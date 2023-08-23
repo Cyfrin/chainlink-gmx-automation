@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import {TestData} from "../TestData.sol";
 import {LibEventLogDecoder} from "../../src/libraries/LibEventLogDecoder.sol";
-import {ILogAutomation} from "../../src/chainlink/ILogAutomation.sol";
+import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 // forge-std
 import {Test, console} from "forge-std/test.sol";
 // gmx-synthetics
@@ -19,7 +19,7 @@ import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
 /// @notice LibEventLogDecoder.decodeEventLog(log);
 contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
-    using LibEventLogDecoder for ILogAutomation.Log;
+    using LibEventLogDecoder for Log;
     using LibEventLogDecoder for EventUtils.EventLogData;
 
     address internal s_msgSender;
@@ -32,7 +32,7 @@ contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
     bytes32 internal s_key;
     uint256 internal s_orderType;
 
-    ILogAutomation.Log internal s_log;
+    Log internal s_log;
 
     function setUp() public {
         s_msgSender = address(44);
@@ -232,7 +232,7 @@ contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
 
 /// @notice LibEventLogDecoder.decodeEventData(eventData);
 contract LibEventLogDecoderTest_decodeEventData is Test, TestData {
-    using LibEventLogDecoder for ILogAutomation.Log;
+    using LibEventLogDecoder for Log;
     using LibEventLogDecoder for EventUtils.EventLogData;
 
     address internal s_market;
@@ -594,7 +594,7 @@ contract LibEventLogDecoderTest_decodeEventData is Test, TestData {
 }
 
 contract LibEventLogDecoderTest_RealData is Test, TestData {
-    using LibEventLogDecoder for ILogAutomation.Log;
+    using LibEventLogDecoder for Log;
     using LibEventLogDecoder for EventUtils.EventLogData;
 
     // REAL DATA TESTS
