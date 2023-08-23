@@ -7,8 +7,8 @@ import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 
 /// @title Event Log Decoder
 /// @author Alex Roan - Cyfrin (@alexroan)
-library LibEventLogDecoder {
-    error LibEventLogDecoder_IncorrectLogSelector(bytes32 logSelector);
+library LibGMXEventLogDecoder {
+    error LibGMXEventLogDecoder_IncorrectLogSelector(bytes32 logSelector);
 
     //////////
     // EVENTS
@@ -52,7 +52,7 @@ library LibEventLogDecoder {
     {
         // Ensure that the log is an EventLog1 or EventLog2 event
         if (log.topics[0] != EventLog1.selector && log.topics[0] != EventLog2.selector) {
-            revert LibEventLogDecoder_IncorrectLogSelector(log.topics[0]);
+            revert LibGMXEventLogDecoder_IncorrectLogSelector(log.topics[0]);
         }
 
         (msgSender, eventName, eventData) = abi.decode(log.data, (address, string, EventUtils.EventLogData));

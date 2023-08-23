@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 import {TestData} from "../TestData.sol";
-import {LibEventLogDecoder} from "../../src/libraries/LibEventLogDecoder.sol";
+import {LibGMXEventLogDecoder} from "../../src/libraries/LibGMXEventLogDecoder.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 // forge-std
 import {Test, console} from "forge-std/test.sol";
@@ -13,14 +13,14 @@ import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 /// -------------------
 /// Each function in the target conrtact has it's own test contract in this file.
 ///
-/// - `contract LibEventLogDecoderTest_decodeEventLog` -> LibEventLogDecoder.decodeEventLog(log)
-/// - `contract LibEventLogDecoderTest_decodeEventData` -> LibEventLogDecoder.decodeEventData(eventData)
-/// - `contract LibEventLogDecoderTest_RealData` -> Real data tests
+/// - `contract LibGMXEventLogDecoderTest_decodeEventLog` -> LibGMXEventLogDecoder.decodeEventLog(log)
+/// - `contract LibGMXEventLogDecoderTest_decodeEventData` -> LibGMXEventLogDecoder.decodeEventData(eventData)
+/// - `contract LibGMXEventLogDecoderTest_RealData` -> Real data tests
 
-/// @notice LibEventLogDecoder.decodeEventLog(log);
-contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
-    using LibEventLogDecoder for Log;
-    using LibEventLogDecoder for EventUtils.EventLogData;
+/// @notice LibGMXEventLogDecoder.decodeEventLog(log);
+contract LibGMXEventLogDecoderTest_decodeEventLog is Test, TestData {
+    using LibGMXEventLogDecoder for Log;
+    using LibGMXEventLogDecoder for EventUtils.EventLogData;
 
     address internal s_msgSender;
     uint256 internal s_blockNumber;
@@ -53,7 +53,7 @@ contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
         s_log = _generateValidLog(
             s_msgSender,
             s_blockNumber,
-            LibEventLogDecoder.EventLog2.selector,
+            LibGMXEventLogDecoder.EventLog2.selector,
             s_eventName,
             s_market,
             s_swapPath,
@@ -82,7 +82,7 @@ contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
         s_log = _generateValidLog(
             s_msgSender,
             s_blockNumber,
-            LibEventLogDecoder.EventLog1.selector,
+            LibGMXEventLogDecoder.EventLog1.selector,
             s_eventName,
             s_market,
             s_swapPath,
@@ -103,7 +103,9 @@ contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
     function test_decodeEventLog_IncorrectLogSelector_reverts() public {
         s_log.topics[0] = bytes32(0);
         vm.expectRevert(
-            abi.encodeWithSelector(LibEventLogDecoder.LibEventLogDecoder_IncorrectLogSelector.selector, s_log.topics[0])
+            abi.encodeWithSelector(
+                LibGMXEventLogDecoder.LibGMXEventLogDecoder_IncorrectLogSelector.selector, s_log.topics[0]
+            )
         );
         s_log.decodeEventLog();
     }
@@ -131,7 +133,7 @@ contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
         address[] memory shortTokenSwapPath
     ) public {
         bytes32 logSelector =
-            logSelectorIndex ? LibEventLogDecoder.EventLog1.selector : LibEventLogDecoder.EventLog2.selector;
+            logSelectorIndex ? LibGMXEventLogDecoder.EventLog1.selector : LibGMXEventLogDecoder.EventLog2.selector;
         s_log = _generateValidLog(
             msgSender,
             blockNumber,
@@ -230,10 +232,10 @@ contract LibEventLogDecoderTest_decodeEventLog is Test, TestData {
     }
 }
 
-/// @notice LibEventLogDecoder.decodeEventData(eventData);
-contract LibEventLogDecoderTest_decodeEventData is Test, TestData {
-    using LibEventLogDecoder for Log;
-    using LibEventLogDecoder for EventUtils.EventLogData;
+/// @notice LibGMXEventLogDecoder.decodeEventData(eventData);
+contract LibGMXEventLogDecoderTest_decodeEventData is Test, TestData {
+    using LibGMXEventLogDecoder for Log;
+    using LibGMXEventLogDecoder for EventUtils.EventLogData;
 
     address internal s_market;
     address[] internal s_swapPath;
@@ -593,9 +595,9 @@ contract LibEventLogDecoderTest_decodeEventData is Test, TestData {
     }
 }
 
-contract LibEventLogDecoderTest_RealData is Test, TestData {
-    using LibEventLogDecoder for Log;
-    using LibEventLogDecoder for EventUtils.EventLogData;
+contract LibGMXEventLogDecoderTest_RealData is Test, TestData {
+    using LibGMXEventLogDecoder for Log;
+    using LibGMXEventLogDecoder for EventUtils.EventLogData;
 
     // REAL DATA TESTS
     // Test decoding an event log 2

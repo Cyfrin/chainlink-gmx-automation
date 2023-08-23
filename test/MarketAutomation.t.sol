@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import {MarketAutomation, DataStore, Reader, OrderHandler, Market} from "../src/MarketAutomation.sol";
 import {TestData} from "./TestData.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
-import {LibEventLogDecoder} from "../src/libraries/LibEventLogDecoder.sol";
+import {LibGMXEventLogDecoder} from "../src/libraries/LibGMXEventLogDecoder.sol";
 // forge-std
 import {Test, console} from "forge-std/test.sol";
 // openzeppelin
@@ -76,7 +76,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         s_log = _generateValidLog(
             address(this),
             block.number,
-            LibEventLogDecoder.EventLog2.selector,
+            LibGMXEventLogDecoder.EventLog2.selector,
             "OrderCreated",
             market,
             swapPath,
@@ -94,7 +94,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
     // TODO
     function test_checkLog_success() public {}
     // TODO
-    function test_checkLog_LibEventLogDecoder_IncorrectLogSelector_reverts() public {}
+    function test_checkLog_LibGMXEventLogDecoder_IncorrectLogSelector_reverts() public {}
     // TODO
     function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {}
     // TODO
@@ -117,7 +117,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         address[] memory shortTokenSwapPath
     ) public {
         bytes32 logSelector =
-            logSelectorIndex ? LibEventLogDecoder.EventLog1.selector : LibEventLogDecoder.EventLog2.selector;
+            logSelectorIndex ? LibGMXEventLogDecoder.EventLog1.selector : LibGMXEventLogDecoder.EventLog2.selector;
         Log memory log = _generateValidLog(
             msgSender,
             blockNumber,

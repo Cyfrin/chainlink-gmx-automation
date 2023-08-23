@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {LibEventLogDecoder} from "./libraries/LibEventLogDecoder.sol";
+import {LibGMXEventLogDecoder} from "./libraries/LibGMXEventLogDecoder.sol";
 import {GMXAutomationBase} from "./GMXAutomationBase.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
@@ -17,8 +17,8 @@ import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogA
 /// @title Market Automation - Handles Market Decrease, Increase and Swap cases
 /// @author Alex Roan - Cyfrin (@alexroan)
 contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXAutomationBase {
-    using LibEventLogDecoder for Log;
-    using LibEventLogDecoder for EventUtils.EventLogData;
+    using LibGMXEventLogDecoder for Log;
+    using LibGMXEventLogDecoder for EventUtils.EventLogData;
 
     // ERRORS
     error MarketAutomation_IncorrectEventName(string eventName, string expectedEventName);
