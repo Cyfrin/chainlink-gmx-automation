@@ -27,7 +27,6 @@ contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMX
     string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
 
     // IMMUTABLES
-
     DepositHandler public immutable i_depositHandler;
 
     /// @param dataStore the DataStore contract address - immutable

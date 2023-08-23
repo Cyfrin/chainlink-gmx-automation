@@ -6,7 +6,7 @@
 | -                        | Market Increase | `emitEventLog2` | `OrderCreated`      |   2  | `OrderHandler`          | `executeOrder`      |
 | -                        | Market Decrease | `emitEventLog2` | `OrderCreated`      |   4  | `OrderHandler`          | `executeOrder`      |
 | [`DepositAutomation.sol`](./src/DepositAutomation.sol)    | Deposit         | `emitEventLog1` | `DepositCreated`    |   -  | `DepositHandler` | `executeDeposit`    |
-| `WithdrawalAutomation.sol` | Withdrawal      | `emitEventLog1` | `WithdrawalCreated` |   -  | `WathdrawalHandler`     | `executeWithdrawal` |
+| [`WithdrawalAutomation.sol`](./src/WithdrawalAutomation.sol) | Withdrawal      | `emitEventLog1` | `WithdrawalCreated` |   -  | `WathdrawalHandler`     | `executeWithdrawal` |
 
 # Questions
 
