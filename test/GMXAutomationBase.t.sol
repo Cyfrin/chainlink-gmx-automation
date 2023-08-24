@@ -49,10 +49,9 @@ contract GMXAutomationBaseTest__pushPropFeedIdsToSet is Test {
 }
 
 contract GMXAutomationBaseTest__flushFeedIdSet is Test {
-    using EnumerableSet for EnumerableSet.Bytes32Set;
-
     GMXAutomationBaseHelper internal s_gmxAutomation;
-    EnumerableSet.Bytes32Set internal s_testSet;
+
+    mapping(string => bool) internal s_contains;
 
     function setUp() public {
         s_gmxAutomation = new GMXAutomationBaseHelper(DataStore(address(1)), Reader(address(2)));
@@ -60,19 +59,19 @@ contract GMXAutomationBaseTest__flushFeedIdSet is Test {
 
     function test__flushFeedIdSet_shouldReturnAllFeedIds() public {
         bytes32[] memory feedIds = new bytes32[](3);
-        feedIds[0] = bytes32("1234566");
-        feedIds[1] = bytes32("1234567");
-        feedIds[2] = bytes32("1234568");
+        feedIds[0] = 0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c;
+        feedIds[1] = 0x4ce52cf28e49f4673198074968aeea280f13b5f897c687eb713bcfc1eeab89ba;
+        feedIds[2] = 0x12be1859ee43f46bab53750915f20855f54e891f88ddd524f26a72d6f4deed1d;
         for (uint256 i = 0; i < feedIds.length; i++) {
-            s_testSet.add(feedIds[i]);
             s_gmxAutomation.feedIdSetAdd(feedIds[i]);
         }
+        s_contains["0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c"] = true;
+        s_contains["0x4ce52cf28e49f4673198074968aeea280f13b5f897c687eb713bcfc1eeab89ba"] = true;
+        s_contains["0x12be1859ee43f46bab53750915f20855f54e891f88ddd524f26a72d6f4deed1d"] = true;
         string[] memory flushedFeedIds = s_gmxAutomation.flushFeedIdSet();
         assertEq(flushedFeedIds.length, feedIds.length);
         for (uint256 i = 0; i < feedIds.length; i++) {
-            bytes memory flushedFeedIdBytes = bytes(flushedFeedIds[i]);
-            bytes32 flushedFeedId = abi.decode(flushedFeedIdBytes, (bytes32));
-            assertTrue(s_testSet.contains(flushedFeedId));
+            assertTrue(s_contains[flushedFeedIds[i]]);
         }
     }
 
@@ -83,5 +82,28 @@ contract GMXAutomationBaseTest__flushFeedIdSet is Test {
         }
         string[] memory flushedFeedIds = s_gmxAutomation.flushFeedIdSet();
         assertEq(s_gmxAutomation.feedIdSetLength(), 0);
+    }
+}
+
+contract GMXAutomationBaseTest__toHexString is Test {
+    GMXAutomationBaseHelper internal s_gmxAutomation;
+
+    function setUp() public {
+        s_gmxAutomation = new GMXAutomationBaseHelper(DataStore(address(1)), Reader(address(2)));
+    }
+
+    function test__toHexString_shouldReturnCorrectString() public {
+        bytes32 feedId = 0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c;
+        string memory expectedFeedIdString = "0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c";
+        string memory feedIdString = s_gmxAutomation.toHexString(feedId);
+        assertEq(feedIdString, expectedFeedIdString);
+        feedId = 0x0000000000000000000000000000000000000000000000000000000000000000;
+        expectedFeedIdString = "0x0000000000000000000000000000000000000000000000000000000000000000";
+        feedIdString = s_gmxAutomation.toHexString(feedId);
+        assertEq(feedIdString, expectedFeedIdString);
+        feedId = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        expectedFeedIdString = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+        feedIdString = s_gmxAutomation.toHexString(feedId);
+        assertEq(feedIdString, expectedFeedIdString);
     }
 }

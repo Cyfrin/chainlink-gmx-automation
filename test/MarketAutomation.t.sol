@@ -59,8 +59,11 @@ contract MarketAutomationTest_checkLog is Test, TestData {
     //////////////
 
     // TODO
-    function test_checkLog_success() public {}
+    function test_checkLog_success() public {
+        s_marketAutomation.checkLog(s_log);
+    }
     // TODO
+
     function test_checkLog_LibGMXEventLogDecoder_IncorrectLogSelector_reverts() public {}
     // TODO
     function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {}

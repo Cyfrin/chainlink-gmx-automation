@@ -82,8 +82,25 @@ contract GMXAutomationBase is Ownable2Step {
         while (s_feedIdSet.length() > 0) {
             bytes32 value = s_feedIdSet.at(s_feedIdSet.length() - 1);
             s_feedIdSet.remove(value);
-            feedIds[count] = string(abi.encode(value));
+            feedIds[count] = _toHexString(value);
             count++;
         }
+    }
+
+    /// @notice Converts a bytes buffer to a hexadecimal string
+    /// @param value the bytes32 value to convert
+    /// @return the hexadecimal string
+    function _toHexString(bytes32 value) internal pure returns (string memory) {
+        bytes memory buffer = abi.encodePacked(value);
+        // Fixed buffer size for hexadecimal convertion
+        bytes memory converted = new bytes(buffer.length * 2);
+        bytes memory _base = "0123456789abcdef";
+
+        for (uint256 i = 0; i < buffer.length; i++) {
+            converted[i * 2] = _base[uint8(buffer[i]) / _base.length];
+            converted[i * 2 + 1] = _base[uint8(buffer[i]) % _base.length];
+        }
+
+        return string(abi.encodePacked("0x", converted));
     }
 }

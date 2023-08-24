@@ -30,7 +30,7 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
     uint256 public constant EXPECTED_LOG_EVENTDATA_ORDERTYPE_0 = 0;
     uint256 public constant EXPECTED_LOG_EVENTDATA_ORDERTYPE_2 = 2;
     uint256 public constant EXPECTED_LOG_EVENTDATA_ORDERTYPE_4 = 4;
-    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDStr";
+    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDHex";
     string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
 
     // IMMUTABLES

@@ -23,6 +23,10 @@ contract GMXAutomationBaseHelper is GMXAutomationBase {
         return _flushFeedIdSet();
     }
 
+    function toHexString(bytes32 value) public pure returns (string memory) {
+        return _toHexString(value);
+    }
+
     function feedIdSetAdd(bytes32 feedId) public {
         s_feedIdSet.add(feedId);
     }
