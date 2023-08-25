@@ -12,6 +12,7 @@ import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 import {OrderHandler} from "gmx-synthetics/exchange/OrderHandler.sol";
 import {Market} from "gmx-synthetics/market/Market.sol";
+import {OracleUtils} from "gmx-synthetics/oracle/OracleUtils.sol";
 // chainlink
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
@@ -65,7 +66,6 @@ contract MarketAutomationTest_checkLog is Test, TestData {
     // UNIT TESTS
     //////////////
 
-    // TODO
     function test_checkLog_success() public {
         string[] memory expectedFeedIds = new string[](2);
         expectedFeedIds[0] = vm.envString("MARKET_FORK_TEST_FEED_ID_0");
@@ -82,13 +82,47 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         );
         s_marketAutomation.checkLog(s_log);
     }
-    // TODO
 
-    function test_checkLog_LibGMXEventLogDecoder_IncorrectLogSelector_reverts() public {}
-    // TODO
-    function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {}
-    // TODO
-    function test_checkLog_MarketAutomation_IncorrectOrderType_reverts() public {}
+    function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {
+        string memory incorrectLogName = "DepositCreated";
+        address[] memory swapPath;
+        s_log = _generateValidLog(
+            address(this),
+            block.number,
+            LibGMXEventLogDecoder.EventLog2.selector,
+            incorrectLogName,
+            s_marketProps[0].marketToken,
+            swapPath,
+            KEY,
+            2,
+            swapPath,
+            swapPath
+        );
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                MarketAutomation.MarketAutomation_IncorrectEventName.selector, incorrectLogName, "OrderCreated"
+            )
+        );
+        s_marketAutomation.checkLog(s_log);
+    }
+
+    function test_checkLog_MarketAutomation_IncorrectOrderType_reverts() public {
+        address[] memory swapPath;
+        s_log = _generateValidLog(
+            address(this),
+            block.number,
+            LibGMXEventLogDecoder.EventLog2.selector,
+            "OrderCreated",
+            s_marketProps[0].marketToken,
+            swapPath,
+            KEY,
+            5,
+            swapPath,
+            swapPath
+        );
+        vm.expectRevert(abi.encodeWithSelector(MarketAutomation.MarketAutomation_IncorrectOrderType.selector, 5));
+        s_marketAutomation.checkLog(s_log);
+    }
 
     ///////////////////////////
     // FUZZ TESTS
@@ -122,5 +156,52 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         );
         vm.expectRevert();
         s_marketAutomation.checkLog(log);
+    }
+}
+
+contract MarketAutomationTest_checkCallback is Test, TestData {
+    DataStore internal s_dataStore;
+    Reader internal s_reader;
+    OrderHandler internal s_orderHandler;
+    MarketAutomation internal s_marketAutomation;
+
+    function setUp() public {
+        s_dataStore = DataStore(vm.envAddress(DATA_STORE_LABEL));
+        s_reader = Reader(vm.envAddress(READER_LABEL));
+        s_orderHandler = OrderHandler(vm.envAddress(ORDER_HANDLER_LABEL));
+        s_marketAutomation = new MarketAutomation(s_dataStore, s_reader, s_orderHandler);
+    }
+
+    function test_checkCallback_success(bytes[] calldata values, bytes calldata extraData) public {
+        (bool result, bytes memory data) = s_marketAutomation.checkCallback(values, extraData);
+        assertTrue(result);
+        assertEq(data, abi.encode(values, extraData));
+    }
+}
+
+contract MarketAutomationTest_performUpkeep is Test, TestData {
+    DataStore internal s_dataStore;
+    Reader internal s_reader;
+    OrderHandler internal s_orderHandler;
+    MarketAutomation internal s_marketAutomation;
+
+    function setUp() public {
+        s_dataStore = DataStore(vm.envAddress(DATA_STORE_LABEL));
+        s_reader = Reader(vm.envAddress(READER_LABEL));
+        s_orderHandler = OrderHandler(vm.envAddress(ORDER_HANDLER_LABEL));
+        s_marketAutomation = new MarketAutomation(s_dataStore, s_reader, s_orderHandler);
+    }
+
+    function test_performUpkeep_success(bytes[] memory values, bytes32 key) public {
+        bytes memory extraData = abi.encode(key);
+        bytes memory performData = abi.encode(values, extraData);
+        OracleUtils.SetPricesParams memory expectedParams;
+        expectedParams.realtimeFeedData = values;
+        vm.mockCall(
+            address(s_orderHandler),
+            abi.encodeWithSelector(OrderHandler.executeOrder.selector, key, expectedParams),
+            abi.encode("")
+        );
+        s_marketAutomation.performUpkeep(performData);
     }
 }
