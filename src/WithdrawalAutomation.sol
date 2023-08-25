@@ -19,7 +19,7 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
     using LibGMXEventLogDecoder for EventUtils.EventLogData;
 
     // ERRORS
-    error MarketAutomation_IncorrectEventName(string eventName, string expectedEventName);
+    error WithdrawalAutomation_IncorrectEventName(string eventName, string expectedEventName);
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "WithdrawalCreated";
@@ -52,7 +52,7 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
 
         // Ensure that the event name is equal to the expected event name
         if (keccak256(abi.encode(eventName)) != keccak256(abi.encode(EXPECTED_LOG_EVENTNAME))) {
-            revert MarketAutomation_IncorrectEventName(eventName, EXPECTED_LOG_EVENTNAME);
+            revert WithdrawalAutomation_IncorrectEventName(eventName, EXPECTED_LOG_EVENTNAME);
         }
 
         // Decode the EventData struct to retrieve relevant data
