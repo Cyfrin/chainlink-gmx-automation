@@ -6,7 +6,7 @@ import {GMXAutomationBaseHelper} from "./helpers/GMXAutomationBaseHelper.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 // forge-std
-import {Test, console} from "forge-std/test.sol";
+import {Test, console} from "forge-std/Test.sol";
 // openzeppelin
 import {ERC20Mock} from "openzeppelin/mocks/ERC20Mock.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";

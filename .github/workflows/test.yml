@@ -22,13 +22,35 @@ jobs:
         with:
           version: nightly
 
-      - name: Run Forge build
+      - name: Run Forge install
         run: |
           forge --version
-          forge build --sizes
+          forge install
+        id: install
+      
+      - name: Install node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15
+      
+      - name: Install GMX dependencies
+        run: |
+          cd lib/gmx-synthetics
+          yarn
+
+      - name: Run Forge build
+        run: |
+          forge build
         id: build
 
       - name: Run Forge tests
+        env:
+          ARBITRUM_GOERLI_URL: ${{ secrets.ARBITRUM_GOERLI_URL }}
+          DATA_STORE:  ${{ vars.DATA_STORE }}
+          READER:  ${{ vars.READER }}
+          ORDER_HANDLER:  ${{ vars.ORDER_HANDLER }}
+          MARKET_FORK_TEST_FEED_ID_0:  ${{ vars.MARKET_FORK_TEST_FEED_ID_0 }}
+          MARKET_FORK_TEST_FEED_ID_1:  ${{ vars.MARKET_FORK_TEST_FEED_ID_1 }}
         run: |
           forge test -vvv
         id: test

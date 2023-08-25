@@ -5,7 +5,7 @@ import {TestData} from "../TestData.sol";
 import {LibGMXEventLogDecoder} from "../../src/libraries/LibGMXEventLogDecoder.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 // forge-std
-import {Test, console} from "forge-std/test.sol";
+import {Test, console} from "forge-std/Test.sol";
 // gmx-synthetics
 import {EventUtils} from "gmx-synthetics/event/EventUtils.sol";
 

@@ -17,7 +17,7 @@ import {OracleUtils} from "gmx-synthetics/oracle/OracleUtils.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
 // forge-std
-import {Test, console} from "forge-std/test.sol";
+import {Test, console} from "forge-std/Test.sol";
 
 contract MarketAutomationTest_checkLog is Test, TestData {
     uint256 internal s_forkId;
