@@ -81,7 +81,6 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
         pure
         returns (bool, bytes memory)
     {
-        // TODO
         return (true, abi.encode(values, extraData));
     }
 
@@ -97,13 +96,9 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
     /// @dev Decode the performData and call executeOrder
     function performUpkeep(bytes calldata performData) external {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
-
         bytes32 key = abi.decode(extraData, (bytes32));
-
-        for (uint256 i = 0; i < values.length; i++) {
-            // TODO
-        }
-
-        // TODO executeWithdrawal?
+        OracleUtils.SetPricesParams memory oracleParams;
+        oracleParams.realtimeFeedData = values;
+        i_withdrawalHandler.executeWithdrawal(key, oracleParams);
     }
 }

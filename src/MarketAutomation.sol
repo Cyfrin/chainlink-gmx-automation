@@ -107,7 +107,6 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
         pure
         returns (bool, bytes memory)
     {
-        // TODO: Is this correct?
         return (true, abi.encode(values, extraData));
     }
 
@@ -115,7 +114,7 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
     /// @param performData the data returned from checkCallback. Encoded:
     ///     - bytes[] values. Each value contains a signed report by the DON, and must be decoded:
     ///         - bytes32[3] memory reportContext,
-    ///         - bytes memory reportData, <- This is where we can access the token and price
+    ///         - bytes memory reportData, <- This is where we can access the feedId and price
     ///         - bytes32[] memory rs,
     ///         - bytes32[] memory ss,
     ///         - bytes32 rawVs
@@ -123,23 +122,9 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
     /// @dev Decode the performData and call executeOrder
     function performUpkeep(bytes calldata performData) external {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
-
         bytes32 key = abi.decode(extraData, (bytes32));
-
-        for (uint256 i = 0; i < values.length; i++) {
-            // TODO
-        }
-
-        // i_orderHandler.executeOrder(key, oracleParams);
-    }
-
-    ///////////////////////////
-    // INTERNAL FUNCTIONS
-    ///////////////////////////
-
-    /// TODO: Alter this so that it just returns the tokens and data (prices)
-    /// TODO: After that, create a helper/library that does this for Chainlink
-    function _decodeReportData(bytes memory signedReport) private returns (bytes memory reportData) {
-        (, reportData,,,) = abi.decode(signedReport, (bytes32[3], bytes, bytes32[], bytes32[], bytes32));
+        OracleUtils.SetPricesParams memory oracleParams;
+        oracleParams.realtimeFeedData = values;
+        i_orderHandler.executeOrder(key, oracleParams);
     }
 }
