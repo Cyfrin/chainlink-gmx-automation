@@ -18,6 +18,8 @@ contract TestData {
     string internal constant DATA_STORE_LABEL = "DATA_STORE";
     string internal constant READER_LABEL = "READER";
     string internal constant ORDER_HANDLER_LABEL = "ORDER_HANDLER";
+    string internal constant DEPOSIT_HANDLER_LABEL = "DEPOSIT_HANDLER";
+    string internal constant WITHDRAWAL_HANDLER_LABEL = "WITHDRAWAL_HANDLER";
 
     function _generateValidLog(
         address msgSender,

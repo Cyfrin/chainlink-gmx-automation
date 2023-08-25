@@ -23,7 +23,7 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "WithdrawalCreated";
-    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDStr";
+    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDHex";
     string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
 
     // IMMUTABLES
@@ -57,9 +57,6 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
 
         // Decode the EventData struct to retrieve relevant data
         (bytes32 key, address market,,,,) = eventData.decodeEventData();
-
-        // For the market, retrieve the Props struct from the DataStore. Use Props.marketToken to retrieve the feedId
-        // and add to a list of feedIds.
 
         // Push the market feedId to the set
         Market.Props memory marketProps = i_reader.getMarket(i_dataStore, market);

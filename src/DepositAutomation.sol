@@ -19,11 +19,11 @@ contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMX
     using LibGMXEventLogDecoder for EventUtils.EventLogData;
 
     // ERRORS
-    error MarketAutomation_IncorrectEventName(string eventName, string expectedEventName);
+    error DepositAutomation_IncorrectEventName(string eventName, string expectedEventName);
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "DepositCreated";
-    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDStr";
+    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDHex";
     string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
 
     // IMMUTABLES
@@ -52,7 +52,7 @@ contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMX
 
         // Ensure that the event name is equal to the expected event name
         if (keccak256(abi.encode(eventName)) != keccak256(abi.encode(EXPECTED_LOG_EVENTNAME))) {
-            revert MarketAutomation_IncorrectEventName(eventName, EXPECTED_LOG_EVENTNAME);
+            revert DepositAutomation_IncorrectEventName(eventName, EXPECTED_LOG_EVENTNAME);
         }
 
         // Decode the EventData struct to retrieve relevant data
