@@ -1,15 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {MarketAutomation, DataStore, Reader, OrderHandler, Market} from "../src/MarketAutomation.sol";
+import {MarketAutomation} from "../src/MarketAutomation.sol";
 import {TestData} from "./TestData.sol";
-import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 import {LibGMXEventLogDecoder} from "../src/libraries/LibGMXEventLogDecoder.sol";
-// forge-std
-import {Test, console} from "forge-std/test.sol";
 // openzeppelin
 import {ERC20Mock} from "openzeppelin/mocks/ERC20Mock.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
+// gmx-synthetics
+import {DataStore} from "gmx-synthetics/data/DataStore.sol";
+import {Reader} from "gmx-synthetics/reader/Reader.sol";
+import {OrderHandler} from "gmx-synthetics/exchange/OrderHandler.sol";
+import {Market} from "gmx-synthetics/market/Market.sol";
+// chainlink
+import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
+import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
+// forge-std
+import {Test, console} from "forge-std/test.sol";
 
 contract MarketAutomationTest_checkLog is Test, TestData {
     uint256 internal s_forkId;
@@ -30,7 +37,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         s_reader = Reader(vm.envAddress(READER_LABEL));
         s_orderHandler = OrderHandler(vm.envAddress(ORDER_HANDLER_LABEL));
         s_marketAutomation = new MarketAutomation(s_dataStore, s_reader, s_orderHandler);
-        Market.Props[] memory marketProps = s_reader.getMarkets(s_dataStore, 0, 100);
+        Market.Props[] memory marketProps = s_reader.getMarkets(s_dataStore, 0, 1);
         for (uint256 i = 0; i < marketProps.length; i++) {
             s_marketProps.push(marketProps[i]);
         }
@@ -60,6 +67,19 @@ contract MarketAutomationTest_checkLog is Test, TestData {
 
     // TODO
     function test_checkLog_success() public {
+        string[] memory expectedFeedIds = new string[](2);
+        expectedFeedIds[0] = vm.envString("MARKET_FORK_TEST_FEED_ID_0");
+        expectedFeedIds[1] = vm.envString("MARKET_FORK_TEST_FEED_ID_1");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                FeedLookupCompatibleInterface.FeedLookup.selector,
+                "feedIDHex",
+                expectedFeedIds,
+                "BlockNumber",
+                block.number,
+                abi.encode(KEY)
+            )
+        );
         s_marketAutomation.checkLog(s_log);
     }
     // TODO

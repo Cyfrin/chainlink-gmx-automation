@@ -10,8 +10,4 @@
 
 # Questions
 
-1. What is the relationship between the fields in the Lookup error, and the input to oracleCallback?
-   1. valuesArray - is the whole signed OCR3 report
-      1. Same length as feedIds emitted from Lookup
-      2. Using same `verify` on each item in the values array https://github.com/smartcontractkit/chainlink/blob/d166ad94d817c5b1436b3901965d0db02f21fedf/contracts/src/v0.8/llo-feeds/Verifier.sol#L202
-         1. Get reportData field from that - waiting on details of how this is encoded from Chainlink
+1. (GMX) Do you need realtimeFeedTokens? Or is the data inside realtimeFeedData enough?
