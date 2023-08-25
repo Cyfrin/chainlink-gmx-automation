@@ -37,7 +37,6 @@ jobs:
         run: |
           cd lib/gmx-synthetics
           yarn
-          forge install
 
       - name: Run Forge build
         run: |
