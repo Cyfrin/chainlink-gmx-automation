@@ -11,6 +11,8 @@ import {Keys} from "gmx-synthetics/data/Keys.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 
+/// @title Base Automation Contract for GMX Automation Contracts
+/// @author Alex Roan - Cyfrin (@alexroan)
 contract GMXAutomationBase is Ownable2Step {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     using SafeERC20 for IERC20;

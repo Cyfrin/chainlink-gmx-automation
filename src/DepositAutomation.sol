@@ -14,6 +14,8 @@ import {DepositHandler} from "gmx-synthetics/exchange/DepositHandler.sol";
 import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 
+/// @title Deposit Automation
+/// @author Alex Roan - Cyfrin (@alexroan)
 contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXAutomationBase {
     using LibGMXEventLogDecoder for Log;
     using LibGMXEventLogDecoder for EventUtils.EventLogData;

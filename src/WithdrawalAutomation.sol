@@ -14,6 +14,8 @@ import {WithdrawalHandler} from "gmx-synthetics/exchange/WithdrawalHandler.sol";
 import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 
+/// @title Withdrawal Automation
+/// @author Alex Roan - Cyfrin (@alexroan)
 contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXAutomationBase {
     using LibGMXEventLogDecoder for Log;
     using LibGMXEventLogDecoder for EventUtils.EventLogData;
