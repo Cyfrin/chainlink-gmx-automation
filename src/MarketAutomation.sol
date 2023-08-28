@@ -83,16 +83,16 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
 
         // Push the market feedId to the set
         Market.Props memory marketProps = i_reader.getMarket(i_dataStore, market);
-        _pushPropFeedIdsToSet(marketProps);
+        _addPropsToMapping(marketProps);
 
         // Push the swapPath feedIds to the set
         for (uint256 i = 0; i < swapPath.length; i++) {
             Market.Props memory swapPathProps = i_reader.getMarket(i_dataStore, swapPath[i]);
-            _pushPropFeedIdsToSet(swapPathProps);
+            _addPropsToMapping(swapPathProps);
         }
 
         // Clear the feedIdSet
-        (string[] memory feedIds, address[] memory addresses) = _flushFeedIdsAndAddresses();
+        (string[] memory feedIds, address[] memory addresses) = _flushMapping();
 
         // Construct the data for the data streams lookup error
         revert FeedLookup(

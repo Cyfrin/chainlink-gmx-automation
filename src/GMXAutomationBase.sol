@@ -49,11 +49,11 @@ contract GMXAutomationBase is Ownable2Step {
     // INTERNAL FUNCTIONS
     ///////////////////////////
 
-    /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the feedIdSet
+    /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the feedIdToMarketTokenMap
     /// @dev Does not allow for duplicate feedIds or zero address feedIds
-    /// @dev Does not push the Props.marketToken feedId to the feedIdSet
+    /// @dev Does not push the Props.marketToken feedId to the feedIdToMarketTokenMap
     /// @param marketProps the Market Props struct to retrieve the feedIds from
-    function _pushPropFeedIdsToSet(Market.Props memory marketProps) internal {
+    function _addPropsToMapping(Market.Props memory marketProps) internal {
         if (marketProps.indexToken != address(0)) {
             uint256 indexTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken)));
             if (indexTokenFeedId != 0 && !s_feedIdToMarketTokenMap.contains(indexTokenFeedId)) {
@@ -76,10 +76,10 @@ contract GMXAutomationBase is Ownable2Step {
         }
     }
 
-    /// @notice Returns all values from and clears the s_feedIdSet
-    /// @dev Iterates over the feedIdSet, and removes each feedId and returns them as an array
-    /// @return feedIds the feedIds that were in the feedIdSet
-    function _flushFeedIdsAndAddresses() internal returns (string[] memory feedIds, address[] memory addresses) {
+    /// @notice Returns all values from and clears the s_feedIdToMarketTokenMap
+    /// @dev Iterates over the feedIdToMarketTokenMap, and removes each feedId and returns them as an array
+    /// @return feedIds the feedIds that were in the feedIdToMarketTokenMap
+    function _flushMapping() internal returns (string[] memory feedIds, address[] memory addresses) {
         uint256 length = s_feedIdToMarketTokenMap.length();
         feedIds = new string[](length);
         addresses = new address[](length);

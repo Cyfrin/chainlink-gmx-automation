@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+// gmx-synthetics
 import {GMXAutomationBase} from "../src/GMXAutomationBase.sol";
 import {GMXAutomationBaseHelper} from "./helpers/GMXAutomationBaseHelper.sol";
 import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
+import {Market} from "gmx-synthetics/market/Market.sol";
+import {Keys} from "gmx-synthetics/data/Keys.sol";
 // forge-std
 import {Test, console} from "forge-std/Test.sol";
 // openzeppelin
@@ -44,11 +47,49 @@ contract GMXAutomationBaseTest_withdraw is Test {
     }
 }
 
-contract GMXAutomationBaseTest__pushPropFeedIdsToSet is Test {
-// TODO every branch
+contract GMXAutomationBaseTest__addPropsToMapping is Test {
+    GMXAutomationBaseHelper internal s_gmxAutomation;
+
+    address internal constant DATA_STORE_ADDRESS = address(1);
+
+    function setUp() public {
+        s_gmxAutomation = new GMXAutomationBaseHelper(DataStore(DATA_STORE_ADDRESS), Reader(address(2)));
+    }
+
+    function test__addPropsToMapping_success() public {
+        Market.Props memory marketProps;
+        marketProps.indexToken = address(1);
+        marketProps.longToken = address(2);
+        marketProps.shortToken = address(3);
+
+        bytes32 indexTokenFeedId = bytes32("99");
+        bytes32 longTokenFeedId = bytes32("100");
+        bytes32 shortTokenFeedId = bytes32("101");
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.indexToken)),
+            abi.encode(indexTokenFeedId)
+        );
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.longToken)),
+            abi.encode(longTokenFeedId)
+        );
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.shortToken)),
+            abi.encode(shortTokenFeedId)
+        );
+        s_gmxAutomation.addPropsToMapping(marketProps);
+
+        assertEq(s_gmxAutomation.feedIdToMarketTokenMapLength(), 3);
+        assertEq(s_gmxAutomation.feedIdToMarketTokenMapGet(uint256(indexTokenFeedId)), marketProps.indexToken);
+        assertEq(s_gmxAutomation.feedIdToMarketTokenMapGet(uint256(longTokenFeedId)), marketProps.longToken);
+        assertEq(s_gmxAutomation.feedIdToMarketTokenMapGet(uint256(shortTokenFeedId)), marketProps.shortToken);
+    }
 }
 
-contract GMXAutomationBaseTest__flushFeedIdsAndAddresses is Test {
+contract GMXAutomationBaseTest__flushMapping is Test {
     GMXAutomationBaseHelper internal s_gmxAutomation;
 
     mapping(string => address) internal s_feedIdToAddress;
@@ -57,7 +98,7 @@ contract GMXAutomationBaseTest__flushFeedIdsAndAddresses is Test {
         s_gmxAutomation = new GMXAutomationBaseHelper(DataStore(address(1)), Reader(address(2)));
     }
 
-    function test__flushFeedIdsAndAddresses_shouldReturnAllFeedIdsAndAddresses() public {
+    function test__flushMapping_shouldReturnAllFeedIdsAndAddresses() public {
         bytes32[] memory feedIds = new bytes32[](3);
         feedIds[0] = 0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c;
         feedIds[1] = 0x4ce52cf28e49f4673198074968aeea280f13b5f897c687eb713bcfc1eeab89ba;
@@ -72,19 +113,19 @@ contract GMXAutomationBaseTest__flushFeedIdsAndAddresses is Test {
         s_feedIdToAddress["0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c"] = addresses[0];
         s_feedIdToAddress["0x4ce52cf28e49f4673198074968aeea280f13b5f897c687eb713bcfc1eeab89ba"] = addresses[1];
         s_feedIdToAddress["0x12be1859ee43f46bab53750915f20855f54e891f88ddd524f26a72d6f4deed1d"] = addresses[2];
-        (string[] memory flushedFeedIds, address[] memory flushedAddresses) = s_gmxAutomation.flushFeedIdsAndAddresses();
+        (string[] memory flushedFeedIds, address[] memory flushedAddresses) = s_gmxAutomation.flushMapping();
         assertEq(flushedFeedIds.length, feedIds.length);
         for (uint256 i = 0; i < feedIds.length; i++) {
             assertEq(s_feedIdToAddress[flushedFeedIds[i]], flushedAddresses[i]);
         }
     }
 
-    function test__flushFeedIdsAndAddresses_shouldBeEmptyAfter(address[] memory addresses) public {
+    function test__flushMapping_shouldBeEmptyAfter(address[] memory addresses) public {
         for (uint256 i = 0; i < addresses.length; i++) {
             if (addresses[i] == address(0)) continue;
             s_gmxAutomation.feedIdToMarketTokenMapSet(uint256(keccak256(abi.encode(addresses[i]))), addresses[i]);
         }
-        s_gmxAutomation.flushFeedIdsAndAddresses();
+        s_gmxAutomation.flushMapping();
         assertEq(s_gmxAutomation.feedIdToMarketTokenMapLength(), 0);
     }
 }

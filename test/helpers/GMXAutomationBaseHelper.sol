@@ -15,12 +15,12 @@ contract GMXAutomationBaseHelper is GMXAutomationBase {
 
     constructor(DataStore dataStore, Reader reader) GMXAutomationBase(dataStore, reader) {}
 
-    function pushPropFeedIdsToSet(Market.Props memory marketProps) public {
-        _pushPropFeedIdsToSet(marketProps);
+    function addPropsToMapping(Market.Props memory marketProps) public {
+        _addPropsToMapping(marketProps);
     }
 
-    function flushFeedIdsAndAddresses() public returns (string[] memory, address[] memory) {
-        return _flushFeedIdsAndAddresses();
+    function flushMapping() public returns (string[] memory, address[] memory) {
+        return _flushMapping();
     }
 
     function toHexString(bytes32 value) public pure returns (string memory) {
@@ -37,6 +37,10 @@ contract GMXAutomationBaseHelper is GMXAutomationBase {
 
     function feedIdToMarketTokenMapContains(uint256 feedId) public view returns (bool) {
         return s_feedIdToMarketTokenMap.contains(feedId);
+    }
+
+    function feedIdToMarketTokenMapGet(uint256 feedId) public view returns (address) {
+        return s_feedIdToMarketTokenMap.get(feedId);
     }
 
     function feedIdToMarketTokenMapAt(uint256 index) public view returns (uint256, address) {

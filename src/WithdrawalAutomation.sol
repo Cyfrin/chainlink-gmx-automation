@@ -62,10 +62,10 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
 
         // Push the market feedId to the set
         Market.Props memory marketProps = i_reader.getMarket(i_dataStore, market);
-        _pushPropFeedIdsToSet(marketProps);
+        _addPropsToMapping(marketProps);
 
         // Clear the feedIdSet
-        (string[] memory feedIds, address[] memory addresses) = _flushFeedIdsAndAddresses();
+        (string[] memory feedIds, address[] memory addresses) = _flushMapping();
 
         // Construct the data streams lookup error
         revert FeedLookup(

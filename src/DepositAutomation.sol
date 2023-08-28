@@ -70,22 +70,22 @@ contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMX
 
         // Push the market feedId to the set
         Market.Props memory marketProps = i_reader.getMarket(i_dataStore, market);
-        _pushPropFeedIdsToSet(marketProps);
+        _addPropsToMapping(marketProps);
 
         // Push the longTokenSwapPath feedIds to the set
         for (uint256 i = 0; i < longTokenSwapPath.length; i++) {
             Market.Props memory longTokenSwapPathProps = i_reader.getMarket(i_dataStore, longTokenSwapPath[i]);
-            _pushPropFeedIdsToSet(longTokenSwapPathProps);
+            _addPropsToMapping(longTokenSwapPathProps);
         }
 
         // Push the shortTokenSwapPath feedIds to the set
         for (uint256 i = 0; i < shortTokenSwapPath.length; i++) {
             Market.Props memory shortTokenSwapPathProps = i_reader.getMarket(i_dataStore, shortTokenSwapPath[i]);
-            _pushPropFeedIdsToSet(shortTokenSwapPathProps);
+            _addPropsToMapping(shortTokenSwapPathProps);
         }
 
         // Clear the feedIdSet
-        (string[] memory feedIds, address[] memory addresses) = _flushFeedIdsAndAddresses();
+        (string[] memory feedIds, address[] memory addresses) = _flushMapping();
 
         // Construct the data streams lookup error
         revert FeedLookup(
