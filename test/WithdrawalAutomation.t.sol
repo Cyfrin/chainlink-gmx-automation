@@ -19,6 +19,87 @@ import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interf
 // forge-std
 import {Test, console} from "forge-std/Test.sol";
 
+contract WithdrawalAutomation_End2End is Test, TestData {
+    uint256 internal s_forkId;
+
+    DataStore internal s_dataStore;
+    Reader internal s_reader;
+    WithdrawalHandler internal s_withdrawalHandler;
+    WithdrawalAutomation internal s_withdrawalAutomation;
+
+    Market.Props[] internal s_marketProps;
+    Log internal s_log;
+
+    bytes32 internal constant KEY = keccak256(abi.encode("WithdrawalAutomationTest_checkLog"));
+
+    function setUp() public {
+        s_forkId = vm.createSelectFork(vm.envString(ARBITRUM_GOERLI_URL_LABEL));
+        s_dataStore = DataStore(vm.envAddress(DATA_STORE_LABEL));
+        s_reader = Reader(vm.envAddress(READER_LABEL));
+        s_withdrawalHandler = WithdrawalHandler(vm.envAddress(WITHDRAWAL_HANDLER_LABEL));
+        s_withdrawalAutomation = new WithdrawalAutomation(s_dataStore, s_reader, s_withdrawalHandler);
+        Market.Props[] memory marketProps = s_reader.getMarkets(s_dataStore, 0, 1);
+        for (uint256 i = 0; i < marketProps.length; i++) {
+            s_marketProps.push(marketProps[i]);
+        }
+
+        address market = s_marketProps[0].marketToken;
+        address[] memory swapPath;
+        s_log = _generateValidLog(
+            address(this),
+            block.number,
+            LibGMXEventLogDecoder.EventLog1.selector,
+            "WithdrawalCreated",
+            market,
+            swapPath,
+            KEY,
+            2,
+            swapPath,
+            swapPath
+        );
+    }
+
+    function test_WithdrawalAutomation_End2End_success() public {
+        string[] memory expectedFeedIds = new string[](2);
+        expectedFeedIds[0] = vm.envString("MARKET_FORK_TEST_FEED_ID_0");
+        expectedFeedIds[1] = vm.envString("MARKET_FORK_TEST_FEED_ID_1");
+        address[] memory expectedMarketAddresses = new address[](2);
+        expectedMarketAddresses[0] = vm.envAddress("MARKET_ADDRESS_0");
+        expectedMarketAddresses[1] = vm.envAddress("MARKET_ADDRESS_1");
+        // Expected revert
+        bytes memory encodedRevert = abi.encodeWithSelector(
+            FeedLookupCompatibleInterface.FeedLookup.selector,
+            "feedIDHex",
+            expectedFeedIds,
+            "BlockNumber",
+            block.number,
+            abi.encode(KEY, expectedMarketAddresses)
+        );
+        vm.expectRevert(encodedRevert);
+        s_withdrawalAutomation.checkLog(s_log);
+
+        // Off-chain, decode revert and construct callback data
+        bytes[] memory values = new bytes[](2);
+        values[0] = abi.encode(expectedFeedIds[0]);
+        values[1] = abi.encode(expectedFeedIds[1]);
+        (bool result, bytes memory performData) =
+            s_withdrawalAutomation.checkCallback(values, abi.encode(KEY, expectedMarketAddresses));
+        assertTrue(result);
+        assertEq(performData, abi.encode(values, abi.encode(KEY, expectedMarketAddresses)));
+
+        // Pass perfromData to performUpkeep
+        OracleUtils.SetPricesParams memory expectedParams;
+        expectedParams.realtimeFeedTokens = expectedMarketAddresses;
+        expectedParams.realtimeFeedData = values;
+        vm.mockCall(
+            address(s_withdrawalHandler),
+            abi.encodeWithSelector(WithdrawalHandler.executeWithdrawal.selector, KEY, expectedParams),
+            abi.encode("")
+        );
+        s_withdrawalAutomation.performUpkeep(performData);
+    }
+}
+
 contract WithdrawalAutomationTest_checkLog is Test, TestData {
     uint256 internal s_forkId;
 
