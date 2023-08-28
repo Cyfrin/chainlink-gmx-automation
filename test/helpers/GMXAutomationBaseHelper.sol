@@ -8,10 +8,10 @@ import {Reader} from "gmx-synthetics/reader/Reader.sol";
 import {Market} from "gmx-synthetics/market/Market.sol";
 
 // openzeppelin
-import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
+import {EnumerableMap} from "openzeppelin/utils/structs/EnumerableMap.sol";
 
 contract GMXAutomationBaseHelper is GMXAutomationBase {
-    using EnumerableSet for EnumerableSet.Bytes32Set;
+    using EnumerableMap for EnumerableMap.UintToAddressMap;
 
     constructor(DataStore dataStore, Reader reader) GMXAutomationBase(dataStore, reader) {}
 
@@ -19,31 +19,31 @@ contract GMXAutomationBaseHelper is GMXAutomationBase {
         _pushPropFeedIdsToSet(marketProps);
     }
 
-    function flushFeedIdSet() public returns (string[] memory) {
-        return _flushFeedIdSet();
+    function flushFeedIdsAndAddresses() public returns (string[] memory, address[] memory) {
+        return _flushFeedIdsAndAddresses();
     }
 
     function toHexString(bytes32 value) public pure returns (string memory) {
         return _toHexString(value);
     }
 
-    function feedIdSetAdd(bytes32 feedId) public {
-        s_feedIdSet.add(feedId);
+    function feedIdToMarketTokenMapSet(uint256 feedId, address addr) public {
+        s_feedIdToMarketTokenMap.set(feedId, addr);
     }
 
-    function feedIdSetLength() public view returns (uint256) {
-        return s_feedIdSet.length();
+    function feedIdToMarketTokenMapLength() public view returns (uint256) {
+        return s_feedIdToMarketTokenMap.length();
     }
 
-    function feedIdSetContains(bytes32 feedId) public view returns (bool) {
-        return s_feedIdSet.contains(feedId);
+    function feedIdToMarketTokenMapContains(uint256 feedId) public view returns (bool) {
+        return s_feedIdToMarketTokenMap.contains(feedId);
     }
 
-    function feedIdSetAt(uint256 index) public view returns (bytes32) {
-        return s_feedIdSet.at(index);
+    function feedIdToMarketTokenMapAt(uint256 index) public view returns (uint256, address) {
+        return s_feedIdToMarketTokenMap.at(index);
     }
 
-    function feedIdSetValues() public view returns (bytes32[] memory) {
-        return s_feedIdSet.values();
+    function feedIdToMarketTokenMapKeys() public view returns (uint256[] memory) {
+        return s_feedIdToMarketTokenMap.keys();
     }
 }

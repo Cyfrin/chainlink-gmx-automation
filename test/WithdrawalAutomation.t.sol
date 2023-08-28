@@ -67,6 +67,9 @@ contract WithdrawalAutomationTest_checkLog is Test, TestData {
         string[] memory expectedFeedIds = new string[](2);
         expectedFeedIds[0] = vm.envString("MARKET_FORK_TEST_FEED_ID_0");
         expectedFeedIds[1] = vm.envString("MARKET_FORK_TEST_FEED_ID_1");
+        address[] memory expectedMarketAddresses = new address[](2);
+        expectedMarketAddresses[0] = vm.envAddress("MARKET_ADDRESS_0");
+        expectedMarketAddresses[1] = vm.envAddress("MARKET_ADDRESS_1");
         vm.expectRevert(
             abi.encodeWithSelector(
                 FeedLookupCompatibleInterface.FeedLookup.selector,
@@ -74,7 +77,7 @@ contract WithdrawalAutomationTest_checkLog is Test, TestData {
                 expectedFeedIds,
                 "BlockNumber",
                 block.number,
-                abi.encode(KEY)
+                abi.encode(KEY, expectedMarketAddresses)
             )
         );
         s_withdrawalAutomation.checkLog(s_log);
@@ -173,10 +176,11 @@ contract WithdrawalAutomationTest_performUpkeep is Test, TestData {
         s_withdrawalAutomation = new WithdrawalAutomation(s_dataStore, s_reader, s_withdrawalHandler);
     }
 
-    function test_performUpkeep_success(bytes[] memory values, bytes32 key) public {
-        bytes memory extraData = abi.encode(key);
+    function test_performUpkeep_success(bytes[] memory values, bytes32 key, address[] memory marketAddresses) public {
+        bytes memory extraData = abi.encode(key, marketAddresses);
         bytes memory performData = abi.encode(values, extraData);
         OracleUtils.SetPricesParams memory expectedParams;
+        expectedParams.realtimeFeedTokens = marketAddresses;
         expectedParams.realtimeFeedData = values;
         vm.mockCall(
             address(s_withdrawalHandler),

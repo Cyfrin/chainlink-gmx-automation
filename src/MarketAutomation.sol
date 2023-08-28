@@ -92,11 +92,15 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
         }
 
         // Clear the feedIdSet
-        string[] memory feedIds = _flushFeedIdSet();
+        (string[] memory feedIds, address[] memory addresses) = _flushFeedIdsAndAddresses();
 
         // Construct the data for the data streams lookup error
         revert FeedLookup(
-            STRING_DATASTREAMS_FEEDLABEL, feedIds, STRING_DATASTREAMS_QUERYLABEL, log.blockNumber, abi.encode(key)
+            STRING_DATASTREAMS_FEEDLABEL,
+            feedIds,
+            STRING_DATASTREAMS_QUERYLABEL,
+            log.blockNumber,
+            abi.encode(key, addresses)
         );
     }
 
@@ -122,8 +126,9 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
     /// @dev Decode the performData and call executeOrder
     function performUpkeep(bytes calldata performData) external {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
-        bytes32 key = abi.decode(extraData, (bytes32));
+        (bytes32 key, address[] memory addresses) = abi.decode(extraData, (bytes32, address[]));
         OracleUtils.SetPricesParams memory oracleParams;
+        oracleParams.realtimeFeedTokens = addresses;
         oracleParams.realtimeFeedData = values;
         i_orderHandler.executeOrder(key, oracleParams);
     }

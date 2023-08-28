@@ -48,40 +48,44 @@ contract GMXAutomationBaseTest__pushPropFeedIdsToSet is Test {
 // TODO every branch
 }
 
-contract GMXAutomationBaseTest__flushFeedIdSet is Test {
+contract GMXAutomationBaseTest__flushFeedIdsAndAddresses is Test {
     GMXAutomationBaseHelper internal s_gmxAutomation;
 
-    mapping(string => bool) internal s_contains;
+    mapping(string => address) internal s_feedIdToAddress;
 
     function setUp() public {
         s_gmxAutomation = new GMXAutomationBaseHelper(DataStore(address(1)), Reader(address(2)));
     }
 
-    function test__flushFeedIdSet_shouldReturnAllFeedIds() public {
+    function test__flushFeedIdsAndAddresses_shouldReturnAllFeedIdsAndAddresses() public {
         bytes32[] memory feedIds = new bytes32[](3);
         feedIds[0] = 0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c;
         feedIds[1] = 0x4ce52cf28e49f4673198074968aeea280f13b5f897c687eb713bcfc1eeab89ba;
         feedIds[2] = 0x12be1859ee43f46bab53750915f20855f54e891f88ddd524f26a72d6f4deed1d;
+        address[] memory addresses = new address[](3);
+        addresses[0] = address(1);
+        addresses[1] = address(2);
+        addresses[2] = address(3);
         for (uint256 i = 0; i < feedIds.length; i++) {
-            s_gmxAutomation.feedIdSetAdd(feedIds[i]);
+            s_gmxAutomation.feedIdToMarketTokenMapSet(uint256(feedIds[i]), addresses[i]);
         }
-        s_contains["0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c"] = true;
-        s_contains["0x4ce52cf28e49f4673198074968aeea280f13b5f897c687eb713bcfc1eeab89ba"] = true;
-        s_contains["0x12be1859ee43f46bab53750915f20855f54e891f88ddd524f26a72d6f4deed1d"] = true;
-        string[] memory flushedFeedIds = s_gmxAutomation.flushFeedIdSet();
+        s_feedIdToAddress["0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c"] = addresses[0];
+        s_feedIdToAddress["0x4ce52cf28e49f4673198074968aeea280f13b5f897c687eb713bcfc1eeab89ba"] = addresses[1];
+        s_feedIdToAddress["0x12be1859ee43f46bab53750915f20855f54e891f88ddd524f26a72d6f4deed1d"] = addresses[2];
+        (string[] memory flushedFeedIds, address[] memory flushedAddresses) = s_gmxAutomation.flushFeedIdsAndAddresses();
         assertEq(flushedFeedIds.length, feedIds.length);
         for (uint256 i = 0; i < feedIds.length; i++) {
-            assertTrue(s_contains[flushedFeedIds[i]]);
+            assertEq(s_feedIdToAddress[flushedFeedIds[i]], flushedAddresses[i]);
         }
     }
 
-    function test__flushFeedIdSet_shouldBeEmptyAfter(bytes32[] memory feedIds) public {
-        for (uint256 i = 0; i < feedIds.length; i++) {
-            if (feedIds[i] == bytes32(0)) continue;
-            s_gmxAutomation.feedIdSetAdd(feedIds[i]);
+    function test__flushFeedIdsAndAddresses_shouldBeEmptyAfter(address[] memory addresses) public {
+        for (uint256 i = 0; i < addresses.length; i++) {
+            if (addresses[i] == address(0)) continue;
+            s_gmxAutomation.feedIdToMarketTokenMapSet(uint256(keccak256(abi.encode(addresses[i]))), addresses[i]);
         }
-        string[] memory flushedFeedIds = s_gmxAutomation.flushFeedIdSet();
-        assertEq(s_gmxAutomation.feedIdSetLength(), 0);
+        s_gmxAutomation.flushFeedIdsAndAddresses();
+        assertEq(s_gmxAutomation.feedIdToMarketTokenMapLength(), 0);
     }
 }
 

@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 // openzeppelin
 import {Ownable2Step} from "openzeppelin/access/Ownable2Step.sol";
-import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
+import {EnumerableMap} from "openzeppelin/utils/structs/EnumerableMap.sol";
 import {IERC20, SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 // gmx-synthetics
 import {Market} from "gmx-synthetics/market/Market.sol";
@@ -12,7 +12,7 @@ import {DataStore} from "gmx-synthetics/data/DataStore.sol";
 import {Reader} from "gmx-synthetics/reader/Reader.sol";
 
 contract GMXAutomationBase is Ownable2Step {
-    using EnumerableSet for EnumerableSet.Bytes32Set;
+    using EnumerableMap for EnumerableMap.UintToAddressMap;
     using SafeERC20 for IERC20;
 
     // IMMUTABLES
@@ -21,7 +21,8 @@ contract GMXAutomationBase is Ownable2Step {
 
     // STORAGE
     // This should be empty after every transaction. It is filled and cleared each time checkLog is called.
-    EnumerableSet.Bytes32Set internal s_feedIdSet;
+    // mapping (uint256(feedId) => tokenAddress)
+    EnumerableMap.UintToAddressMap internal s_feedIdToMarketTokenMap;
 
     /// @param dataStore the DataStore contract address - immutable
     /// @param reader the Reader contract address - immutable
@@ -52,23 +53,23 @@ contract GMXAutomationBase is Ownable2Step {
     /// @param marketProps the Market Props struct to retrieve the feedIds from
     function _pushPropFeedIdsToSet(Market.Props memory marketProps) internal {
         if (marketProps.indexToken != address(0)) {
-            bytes32 indexTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken));
-            if (indexTokenFeedId != bytes32(0) && !s_feedIdSet.contains(indexTokenFeedId)) {
-                s_feedIdSet.add(indexTokenFeedId);
+            uint256 indexTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken)));
+            if (indexTokenFeedId != 0 && !s_feedIdToMarketTokenMap.contains(indexTokenFeedId)) {
+                s_feedIdToMarketTokenMap.set(indexTokenFeedId, marketProps.indexToken);
             }
         }
 
         if (marketProps.longToken != address(0)) {
-            bytes32 longTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken));
-            if (longTokenFeedId != bytes32(0) && !s_feedIdSet.contains(longTokenFeedId)) {
-                s_feedIdSet.add(longTokenFeedId);
+            uint256 longTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken)));
+            if (longTokenFeedId != 0 && !s_feedIdToMarketTokenMap.contains(longTokenFeedId)) {
+                s_feedIdToMarketTokenMap.set(longTokenFeedId, marketProps.longToken);
             }
         }
 
         if (marketProps.shortToken != address(0)) {
-            bytes32 shortTokenFeedId = i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken));
-            if (shortTokenFeedId != bytes32(0) && !s_feedIdSet.contains(shortTokenFeedId)) {
-                s_feedIdSet.add(shortTokenFeedId);
+            uint256 shortTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken)));
+            if (shortTokenFeedId != 0 && !s_feedIdToMarketTokenMap.contains(shortTokenFeedId)) {
+                s_feedIdToMarketTokenMap.set(shortTokenFeedId, marketProps.shortToken);
             }
         }
     }
@@ -76,13 +77,16 @@ contract GMXAutomationBase is Ownable2Step {
     /// @notice Returns all values from and clears the s_feedIdSet
     /// @dev Iterates over the feedIdSet, and removes each feedId and returns them as an array
     /// @return feedIds the feedIds that were in the feedIdSet
-    function _flushFeedIdSet() internal returns (string[] memory feedIds) {
-        feedIds = new string[](s_feedIdSet.length());
+    function _flushFeedIdsAndAddresses() internal returns (string[] memory feedIds, address[] memory addresses) {
+        uint256 length = s_feedIdToMarketTokenMap.length();
+        feedIds = new string[](length);
+        addresses = new address[](length);
         uint256 count = 0;
-        while (s_feedIdSet.length() > 0) {
-            bytes32 value = s_feedIdSet.at(s_feedIdSet.length() - 1);
-            s_feedIdSet.remove(value);
-            feedIds[count] = _toHexString(value);
+        while (s_feedIdToMarketTokenMap.length() > 0) {
+            (uint256 uintKey, address value) = s_feedIdToMarketTokenMap.at(s_feedIdToMarketTokenMap.length() - 1);
+            s_feedIdToMarketTokenMap.remove(uintKey);
+            feedIds[count] = _toHexString(bytes32(uintKey));
+            addresses[count] = value;
             count++;
         }
     }
