@@ -44,6 +44,10 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
     // AUTOMATION FUNCTIONS
     ///////////////////////////
 
+    /// @notice Retrieve relevant information from the log and perform a feed lookup
+    /// @dev Reverts with custom errors if the event name is not equal to the expected event name (WithdrawalCreated).
+    /// @dev In the success case, reverts with FeedLookup error containing relevant information for the feed lookup
+    /// @dev This function is only ever simulated off-chain, so gas is not a concern.
     function checkLog(Log calldata log) external returns (bool, bytes memory) {
         // Decode Event Log 1
         (
@@ -67,7 +71,7 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
         // Clear the feedIdSet
         (string[] memory feedIds, address[] memory addresses) = _flushMapping();
 
-        // Construct the data streams lookup error
+        // Construct the feed lookup error
         revert FeedLookup(
             STRING_DATASTREAMS_FEEDLABEL,
             feedIds,
@@ -91,12 +95,12 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
     /// @param performData the data returned from checkCallback. Encoded:
     ///     - bytes[] values. Each value contains a signed report by the DON, and must be decoded:
     ///         - bytes32[3] memory reportContext,
-    ///         - bytes memory reportData, <- This is where we can access the token and price
+    ///         - bytes memory reportData,
     ///         - bytes32[] memory rs,
     ///         - bytes32[] memory ss,
     ///         - bytes32 rawVs
-    ///     - bytes extraData <- This is where the key is
-    /// @dev Decode the performData and call executeOrder
+    ///     - bytes extraData <- This is where the key and addresses array are stored
+    /// @dev Decode the performData and call executeWithdrawal
     function performUpkeep(bytes calldata performData) external {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
         (bytes32 key, address[] memory addresses) = abi.decode(extraData, (bytes32, address[]));

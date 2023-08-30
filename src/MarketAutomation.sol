@@ -47,10 +47,10 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
     // AUTOMATION FUNCTIONS
     ///////////////////////////
 
-    /// @notice Retrieve relevant information from the log and perform a data streams lookup
-    /// @dev Reverts with custom errors if the event name is not equal to the expected event name (OrderCreated), or if the orderType is not equal to the expected orderType (4)
-    /// @dev In the success case, reverts with DataStreamsLookup error containing relevant information for the data streams lookup
-    /// @dev This function is only ever simulated off-chain, and is very gas intensive.
+    /// @notice Retrieve relevant information from the log and perform a feed lookup lookup
+    /// @dev Reverts with custom errors if the event name is not equal to the expected event name (OrderCreated), or if the orderType is not equal to the expected orderType [2,4]
+    /// @dev In the success case, reverts with FeedLookup error containing relevant information for the feed lookup lookup
+    /// @dev This function is only ever simulated off-chain, so gas is not a concern.
     function checkLog(Log calldata log) external returns (bool, bytes memory) {
         // Decode Event Log 2
         (
@@ -94,7 +94,7 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
         // Clear the feedIdSet
         (string[] memory feedIds, address[] memory addresses) = _flushMapping();
 
-        // Construct the data for the data streams lookup error
+        // Construct the data for the feed lookup lookup error
         revert FeedLookup(
             STRING_DATASTREAMS_FEEDLABEL,
             feedIds,
@@ -118,11 +118,11 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
     /// @param performData the data returned from checkCallback. Encoded:
     ///     - bytes[] values. Each value contains a signed report by the DON, and must be decoded:
     ///         - bytes32[3] memory reportContext,
-    ///         - bytes memory reportData, <- This is where we can access the feedId and price
+    ///         - bytes memory reportData,
     ///         - bytes32[] memory rs,
     ///         - bytes32[] memory ss,
     ///         - bytes32 rawVs
-    ///     - bytes extraData <- This is where the key is
+    ///     - bytes extraData <- This is where the key and addresses array are stored
     /// @dev Decode the performData and call executeOrder
     function performUpkeep(bytes calldata performData) external {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
