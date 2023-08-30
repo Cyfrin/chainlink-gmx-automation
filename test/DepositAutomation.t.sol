@@ -79,7 +79,7 @@ contract DepositAutomation_End2End is Test, TestData {
             abi.encode(KEY, expectedMarketAddresses)
         );
         vm.expectRevert(encodedRevert);
-        s_depositAutomation.checkLog(s_log);
+        s_depositAutomation.checkLog(s_log, EMPTY_BYTES);
 
         // Off-chain, decode revert and construct callback data
         bytes[] memory values = new bytes[](2);
@@ -167,7 +167,7 @@ contract DepositAutomationTest_checkLog is Test, TestData {
                 abi.encode(KEY, expectedMarketAddresses)
             )
         );
-        s_depositAutomation.checkLog(s_log);
+        s_depositAutomation.checkLog(s_log, EMPTY_BYTES);
     }
 
     function test_checkLog_IncorrectEventName() public {
@@ -190,7 +190,7 @@ contract DepositAutomationTest_checkLog is Test, TestData {
                 DepositAutomation.DepositAutomation_IncorrectEventName.selector, incorrectLogName, "DepositCreated"
             )
         );
-        s_depositAutomation.checkLog(s_log);
+        s_depositAutomation.checkLog(s_log, EMPTY_BYTES);
     }
 
     ///////////////////////////
@@ -224,7 +224,7 @@ contract DepositAutomationTest_checkLog is Test, TestData {
             shortTokenSwapPath
         );
         vm.expectRevert();
-        s_depositAutomation.checkLog(log);
+        s_depositAutomation.checkLog(log, EMPTY_BYTES);
     }
 }
 

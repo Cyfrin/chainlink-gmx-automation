@@ -48,7 +48,7 @@ contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMX
     /// @dev Reverts with custom errors if the event name is not equal to the expected event name (DepositCreated).
     /// @dev In the success case, reverts with FeedLookup error containing relevant information for the feed lookup
     /// @dev This function is only ever simulated off-chain, so gas is not a concern.
-    function checkLog(Log calldata log) external returns (bool, bytes memory) {
+    function checkLog(Log calldata log, bytes memory checkData) external returns (bool, bytes memory) {
         // Decode Event Log 1
         (
             , //msgSender,

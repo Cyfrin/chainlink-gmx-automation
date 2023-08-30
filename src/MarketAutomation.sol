@@ -51,7 +51,7 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
     /// @dev Reverts with custom errors if the event name is not equal to the expected event name (OrderCreated), or if the orderType is not equal to the expected orderType [2,4]
     /// @dev In the success case, reverts with FeedLookup error containing relevant information for the feed lookup lookup
     /// @dev This function is only ever simulated off-chain, so gas is not a concern.
-    function checkLog(Log calldata log) external returns (bool, bytes memory) {
+    function checkLog(Log calldata log, bytes memory checkData) external returns (bool, bytes memory) {
         // Decode Event Log 2
         (
             , //msgSender,

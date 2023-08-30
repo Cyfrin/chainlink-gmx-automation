@@ -21,6 +21,8 @@ contract TestData {
     string internal constant DEPOSIT_HANDLER_LABEL = "DEPOSIT_HANDLER";
     string internal constant WITHDRAWAL_HANDLER_LABEL = "WITHDRAWAL_HANDLER";
 
+    bytes internal constant EMPTY_BYTES = "";
+
     function _generateValidLog(
         address msgSender,
         uint256 blockNumber,

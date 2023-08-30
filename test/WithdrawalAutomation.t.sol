@@ -76,7 +76,7 @@ contract WithdrawalAutomation_End2End is Test, TestData {
             abi.encode(KEY, expectedMarketAddresses)
         );
         vm.expectRevert(encodedRevert);
-        s_withdrawalAutomation.checkLog(s_log);
+        s_withdrawalAutomation.checkLog(s_log, EMPTY_BYTES);
 
         // Off-chain, decode revert and construct callback data
         bytes[] memory values = new bytes[](2);
@@ -161,7 +161,7 @@ contract WithdrawalAutomationTest_checkLog is Test, TestData {
                 abi.encode(KEY, expectedMarketAddresses)
             )
         );
-        s_withdrawalAutomation.checkLog(s_log);
+        s_withdrawalAutomation.checkLog(s_log, EMPTY_BYTES);
     }
 
     function test_checkLog_IncorrectEventName() public {
@@ -186,7 +186,7 @@ contract WithdrawalAutomationTest_checkLog is Test, TestData {
                 "WithdrawalCreated"
             )
         );
-        s_withdrawalAutomation.checkLog(s_log);
+        s_withdrawalAutomation.checkLog(s_log, EMPTY_BYTES);
     }
 
     ///////////////////////////
@@ -220,7 +220,7 @@ contract WithdrawalAutomationTest_checkLog is Test, TestData {
             shortTokenSwapPath
         );
         vm.expectRevert();
-        s_withdrawalAutomation.checkLog(log);
+        s_withdrawalAutomation.checkLog(log, EMPTY_BYTES);
     }
 }
 

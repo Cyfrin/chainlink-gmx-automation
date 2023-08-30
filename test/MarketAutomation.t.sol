@@ -79,7 +79,7 @@ contract MarketAutomationTest_End2End is Test, TestData {
             abi.encode(KEY, expectedMarketAddresses)
         );
         vm.expectRevert(encodedRevert);
-        s_marketAutomation.checkLog(s_log);
+        s_marketAutomation.checkLog(s_log, EMPTY_BYTES);
 
         // Off-chain, decode revert and construct callback data
         bytes[] memory values = new bytes[](2);
@@ -167,7 +167,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
                 abi.encode(KEY, expectedMarketAddresses)
             )
         );
-        s_marketAutomation.checkLog(s_log);
+        s_marketAutomation.checkLog(s_log, EMPTY_BYTES);
     }
 
     function test_checkLog_MarketAutomation_IncorrectEventName_reverts() public {
@@ -190,7 +190,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
                 MarketAutomation.MarketAutomation_IncorrectEventName.selector, incorrectLogName, "OrderCreated"
             )
         );
-        s_marketAutomation.checkLog(s_log);
+        s_marketAutomation.checkLog(s_log, EMPTY_BYTES);
     }
 
     function test_checkLog_MarketAutomation_IncorrectOrderType_reverts() public {
@@ -208,7 +208,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
             swapPath
         );
         vm.expectRevert(abi.encodeWithSelector(MarketAutomation.MarketAutomation_IncorrectOrderType.selector, 5));
-        s_marketAutomation.checkLog(s_log);
+        s_marketAutomation.checkLog(s_log, EMPTY_BYTES);
     }
 
     ///////////////////////////
@@ -242,7 +242,7 @@ contract MarketAutomationTest_checkLog is Test, TestData {
             shortTokenSwapPath
         );
         vm.expectRevert();
-        s_marketAutomation.checkLog(log);
+        s_marketAutomation.checkLog(log, EMPTY_BYTES);
     }
 }
 
