@@ -25,8 +25,8 @@ contract WithdrawalAutomation is ILogAutomation, FeedLookupCompatibleInterface, 
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "WithdrawalCreated";
-    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDHex";
-    string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
+    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIdHex";
+    string public constant STRING_DATASTREAMS_QUERYLABEL = "blockNumber";
 
     // IMMUTABLES
     WithdrawalHandler public immutable i_withdrawalHandler;
