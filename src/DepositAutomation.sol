@@ -25,8 +25,8 @@ contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMX
 
     // CONSTANTS
     string public constant EXPECTED_LOG_EVENTNAME = "DepositCreated";
-    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDHex";
-    string public constant STRING_DATASTREAMS_QUERYLABEL = "BlockNumber";
+    string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIdHex";
+    string public constant STRING_DATASTREAMS_QUERYLABEL = "blockNumber";
 
     // IMMUTABLES
     DepositHandler public immutable i_depositHandler;
