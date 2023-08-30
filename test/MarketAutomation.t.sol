@@ -72,9 +72,9 @@ contract MarketAutomationTest_End2End is Test, TestData {
         // Expected revert
         bytes memory encodedRevert = abi.encodeWithSelector(
             FeedLookupCompatibleInterface.FeedLookup.selector,
-            "feedIDHex",
+            "feedIdHex",
             expectedFeedIds,
-            "BlockNumber",
+            "blockNumber",
             block.number,
             abi.encode(KEY, expectedMarketAddresses)
         );
@@ -160,9 +160,9 @@ contract MarketAutomationTest_checkLog is Test, TestData {
         vm.expectRevert(
             abi.encodeWithSelector(
                 FeedLookupCompatibleInterface.FeedLookup.selector,
-                "feedIDHex",
+                "feedIdHex",
                 expectedFeedIds,
-                "BlockNumber",
+                "blockNumber",
                 block.number,
                 abi.encode(KEY, expectedMarketAddresses)
             )
