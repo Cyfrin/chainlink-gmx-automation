@@ -15,7 +15,8 @@ import {Market} from "gmx-synthetics/market/Market.sol";
 import {OracleUtils} from "gmx-synthetics/oracle/OracleUtils.sol";
 // chainlink
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
-import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
+import {StreamsLookupCompatibleInterface} from
+    "chainlink/dev/automation/2_1/interfaces/StreamsLookupCompatibleInterface.sol";
 // forge-std
 import {Test, console} from "forge-std/Test.sol";
 
@@ -68,7 +69,7 @@ contract WithdrawalAutomation_End2End is Test, TestData {
         expectedMarketAddresses[1] = vm.envAddress("MARKET_ADDRESS_1");
         // Expected revert
         bytes memory encodedRevert = abi.encodeWithSelector(
-            FeedLookupCompatibleInterface.FeedLookup.selector,
+            StreamsLookupCompatibleInterface.StreamsLookup.selector,
             "feedIdHex",
             expectedFeedIds,
             "blockNumber",
@@ -153,7 +154,7 @@ contract WithdrawalAutomationTest_checkLog is Test, TestData {
         expectedMarketAddresses[1] = vm.envAddress("MARKET_ADDRESS_1");
         vm.expectRevert(
             abi.encodeWithSelector(
-                FeedLookupCompatibleInterface.FeedLookup.selector,
+                StreamsLookupCompatibleInterface.StreamsLookup.selector,
                 "feedIdHex",
                 expectedFeedIds,
                 "blockNumber",

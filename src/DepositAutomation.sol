@@ -11,12 +11,13 @@ import {Market} from "gmx-synthetics/market/Market.sol";
 import {OracleUtils} from "gmx-synthetics/oracle/OracleUtils.sol";
 import {DepositHandler} from "gmx-synthetics/exchange/DepositHandler.sol";
 // chainlink
-import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
+import {StreamsLookupCompatibleInterface} from
+    "chainlink/dev/automation/2_1/interfaces/StreamsLookupCompatibleInterface.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 
 /// @title Deposit Automation
 /// @author Alex Roan - Cyfrin (@alexroan)
-contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXAutomationBase {
+contract DepositAutomation is ILogAutomation, StreamsLookupCompatibleInterface, GMXAutomationBase {
     using LibGMXEventLogDecoder for Log;
     using LibGMXEventLogDecoder for EventUtils.EventLogData;
 
@@ -46,9 +47,9 @@ contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMX
 
     /// @notice Retrieve relevant information from the log and perform a feed lookup
     /// @dev Reverts with custom errors if the event name is not equal to the expected event name (DepositCreated).
-    /// @dev In the success case, reverts with FeedLookup error containing relevant information for the feed lookup
+    /// @dev In the success case, reverts with StreamsLookup error containing relevant information for the feed lookup
     /// @dev This function is only ever simulated off-chain, so gas is not a concern.
-    function checkLog(Log calldata log, bytes memory checkData) external returns (bool, bytes memory) {
+    function checkLog(Log calldata log, bytes memory) external returns (bool, bytes memory) {
         // Decode Event Log 1
         (
             , //msgSender,
@@ -92,7 +93,7 @@ contract DepositAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMX
         (string[] memory feedIds, address[] memory addresses) = _flushMapping();
 
         // Construct the feed lookup error
-        revert FeedLookup(
+        revert StreamsLookup(
             STRING_DATASTREAMS_FEEDLABEL,
             feedIds,
             STRING_DATASTREAMS_QUERYLABEL,

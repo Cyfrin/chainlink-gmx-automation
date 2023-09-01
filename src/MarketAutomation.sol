@@ -11,12 +11,13 @@ import {Market} from "gmx-synthetics/market/Market.sol";
 import {OracleUtils} from "gmx-synthetics/oracle/OracleUtils.sol";
 import {OrderHandler} from "gmx-synthetics/exchange/OrderHandler.sol";
 // chainlink
-import {FeedLookupCompatibleInterface} from "chainlink/dev/automation/2_1/interfaces/FeedLookupCompatibleInterface.sol";
+import {StreamsLookupCompatibleInterface} from
+    "chainlink/dev/automation/2_1/interfaces/StreamsLookupCompatibleInterface.sol";
 import {ILogAutomation, Log} from "chainlink/dev/automation/2_1/interfaces/ILogAutomation.sol";
 
 /// @title Market Automation - Handles Market Decrease, Increase and Swap cases
 /// @author Alex Roan - Cyfrin (@alexroan)
-contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXAutomationBase {
+contract MarketAutomation is ILogAutomation, StreamsLookupCompatibleInterface, GMXAutomationBase {
     using LibGMXEventLogDecoder for Log;
     using LibGMXEventLogDecoder for EventUtils.EventLogData;
 
@@ -49,9 +50,9 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
 
     /// @notice Retrieve relevant information from the log and perform a feed lookup lookup
     /// @dev Reverts with custom errors if the event name is not equal to the expected event name (OrderCreated), or if the orderType is not equal to the expected orderType [2,4]
-    /// @dev In the success case, reverts with FeedLookup error containing relevant information for the feed lookup lookup
+    /// @dev In the success case, reverts with StreamsLookup error containing relevant information for the feed lookup lookup
     /// @dev This function is only ever simulated off-chain, so gas is not a concern.
-    function checkLog(Log calldata log, bytes memory checkData) external returns (bool, bytes memory) {
+    function checkLog(Log calldata log, bytes memory) external returns (bool, bytes memory) {
         // Decode Event Log 2
         (
             , //msgSender,
@@ -95,7 +96,7 @@ contract MarketAutomation is ILogAutomation, FeedLookupCompatibleInterface, GMXA
         (string[] memory feedIds, address[] memory addresses) = _flushMapping();
 
         // Construct the data for the feed lookup lookup error
-        revert FeedLookup(
+        revert StreamsLookup(
             STRING_DATASTREAMS_FEEDLABEL,
             feedIds,
             STRING_DATASTREAMS_QUERYLABEL,

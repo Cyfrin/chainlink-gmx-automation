@@ -11,7 +11,4 @@ auto_detect_remappings = false
 [rpc_endpoints]
 arbitrum_goerli = "${ARBITRUM_GOERLI_URL}"
 
-[etherscan]
-arbitrum_goerli = { key = "${ARBITRUM_GOERLI_ETHERSCAN_KEY}", url = "https://api.arbiscan.io/api" }
-
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
