@@ -63,6 +63,27 @@ contract MarketAutomationTest_End2End is Test, TestData {
         );
     }
 
+    //// command: `forge test --match-test test_checkLog_realData_success -vvvvv`
+    function test_checkLog_realData_success() public {
+        s_marketAutomation = MarketAutomation(0xE0886d9baAaD385F37d460A4ec7b32b79a3731e0);
+        string[] memory expectedFeedIds = new string[](2);
+        expectedFeedIds[0] = "0xbf1febc8c335cb236c1995c1007a928a3f7ae8307a1a20cb31334e6d316c62d1";
+        expectedFeedIds[1] = "0x4554482d5553442d415242495452554d2d544553544e45540000000000000000";
+
+        bytes memory encodedRevert = abi.encodeWithSelector(
+            StreamsLookupCompatibleInterface.StreamsLookup.selector,
+            "feedIdHex",
+            expectedFeedIds,
+            "blockNumber",
+            38174768,
+            hex"23e61805fed7a15e0190077bd450bab888d6e572caaf722cb95f2e217fb42a56000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000020000000000000000000000007b7c6c49fa99b37270077fbfa398748c27046984000000000000000000000000e39ab88f8a4777030a534146a9ca3b52bd5d43a3"
+        );
+
+        vm.expectRevert(encodedRevert);
+
+        s_marketAutomation.checkLog(_realEventLog2Data_MikeStone(), EMPTY_BYTES);
+    }
+
     function test_MarketAutomation_End2End_success() public {
         string[] memory expectedFeedIds = new string[](2);
         expectedFeedIds[0] = vm.envString("MARKET_FORK_TEST_FEED_ID_0");
