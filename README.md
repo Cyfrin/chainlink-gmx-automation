@@ -40,7 +40,11 @@
 ## Deployment
 
 1. Ensure that your `.env` file is fully populated, and the address for you PRIVATE_KEY variable is funded with Arbitrum Goerli ETH
-2. To deploy the `DepositAutomation` contract, run the following script in the terminal:
+2. Run the following  command to load your `.env` file into your environment:
+   ```
+   source .env
+   ```
+3. To deploy the `DepositAutomation` contract, run the following script in the terminal:
    ```
    forge script script/DeployDepositAutomation.s.sol --rpc-url $ARBITRUM_GOERLI_URL --broadcast
    ```
