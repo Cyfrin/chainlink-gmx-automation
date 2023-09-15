@@ -50,7 +50,7 @@ contract DepositAutomation is ILogAutomation, StreamsLookupCompatibleInterface, 
     /// @dev In the success case, reverts with StreamsLookup error containing relevant information for the feed lookup
     /// @dev This function is only ever simulated off-chain, so gas is not a concern.
     function checkLog(Log calldata log, bytes memory) external returns (bool, bytes memory) {
-        // Decode Event Log 1
+        // Decode Event Log 2
         (
             , //msgSender,
             string memory eventName,
