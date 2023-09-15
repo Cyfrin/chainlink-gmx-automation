@@ -17,11 +17,17 @@ contract GMXAutomationBase is Ownable2Step {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     using SafeERC20 for IERC20;
 
+    // ERRORS
+    error GMXAutomationBase_OnlyForwarder();
+
     // IMMUTABLES
     DataStore public immutable i_dataStore;
     Reader public immutable i_reader;
 
     // STORAGE
+    // The address that `performUpkeep` is called from
+    address public s_forwarderAddress;
+
     // This should be empty after every transaction. It is filled and cleared each time checkLog is called.
     // mapping (uint256(feedId) => tokenAddress)
     EnumerableMap.UintToAddressMap internal s_feedIdToMarketTokenMap;
@@ -34,6 +40,16 @@ contract GMXAutomationBase is Ownable2Step {
     }
 
     ///////////////////////////
+    // MODIFIERS
+    ///////////////////////////
+
+    /// @notice Check that the msg.sender is the forwarder address
+    modifier onlyForwarder() {
+        if (msg.sender != s_forwarderAddress) revert GMXAutomationBase_OnlyForwarder();
+        _;
+    }
+
+    ///////////////////////////
     // OWNABLE FUNCTIONS
     ///////////////////////////
 
@@ -43,6 +59,13 @@ contract GMXAutomationBase is Ownable2Step {
     /// @param to the address to withdraw the tokens to
     function withdraw(IERC20 token, address to, uint256 amount) external onlyOwner {
         token.safeTransfer(to, amount);
+    }
+
+    /// @notice Set the address that `performUpkeep` is called from
+    /// @dev Only callable by the owner
+    /// @param forwarderAddress the address to set
+    function setForwarderAddress(address forwarderAddress) external onlyOwner {
+        s_forwarderAddress = forwarderAddress;
     }
 
     ///////////////////////////

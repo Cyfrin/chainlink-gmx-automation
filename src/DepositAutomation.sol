@@ -122,7 +122,7 @@ contract DepositAutomation is ILogAutomation, StreamsLookupCompatibleInterface, 
     ///         - bytes32 rawVs
     ///     - bytes extraData <- This is where the key and addresses array are stored
     /// @dev Decode the performData and call executeDeposit
-    function performUpkeep(bytes calldata performData) external {
+    function performUpkeep(bytes calldata performData) external onlyForwarder {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
         (bytes32 key, address[] memory addresses) = abi.decode(extraData, (bytes32, address[]));
         OracleUtils.SetPricesParams memory oracleParams;

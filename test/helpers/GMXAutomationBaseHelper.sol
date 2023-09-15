@@ -15,6 +15,8 @@ contract GMXAutomationBaseHelper is GMXAutomationBase {
 
     constructor(DataStore dataStore, Reader reader) GMXAutomationBase(dataStore, reader) {}
 
+    function modifierOnlyForwarder() public onlyForwarder {}
+
     function addPropsToMapping(Market.Props memory marketProps) public {
         _addPropsToMapping(marketProps);
     }

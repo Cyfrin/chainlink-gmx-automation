@@ -23,6 +23,8 @@ contract TestData {
 
     bytes internal constant EMPTY_BYTES = "";
 
+    address internal constant FORWARDER = address(133742069);
+
     function _generateValidLog(
         address msgSender,
         uint256 blockNumber,
