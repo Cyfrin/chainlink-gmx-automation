@@ -63,11 +63,31 @@ contract WithdrawalAutomation is ILogAutomation, StreamsLookupCompatibleInterfac
         }
 
         // Decode the EventData struct to retrieve relevant data
-        (bytes32 key, address market,,,,) = eventData.decodeEventData();
+        (bytes32 key, address market,,, address[] memory longTokenSwapPath, address[] memory shortTokenSwapPath) =
+            eventData.decodeEventData();
+
+        // For each address in:
+        // - market
+        // - longTokenSwapPath[]
+        // - shortTokenSwapPath[]
+        // retrieve the Props struct from the DataStore. Use Props.marketToken to retrieve the feedId
+        // and add to a list of feedIds.
 
         // Push the market feedId to the set
         Market.Props memory marketProps = i_reader.getMarket(i_dataStore, market);
         _addPropsToMapping(marketProps);
+
+        // Push the longTokenSwapPath feedIds to the set
+        for (uint256 i = 0; i < longTokenSwapPath.length; i++) {
+            Market.Props memory longTokenSwapPathProps = i_reader.getMarket(i_dataStore, longTokenSwapPath[i]);
+            _addPropsToMapping(longTokenSwapPathProps);
+        }
+
+        // Push the shortTokenSwapPath feedIds to the set
+        for (uint256 i = 0; i < shortTokenSwapPath.length; i++) {
+            Market.Props memory shortTokenSwapPathProps = i_reader.getMarket(i_dataStore, shortTokenSwapPath[i]);
+            _addPropsToMapping(shortTokenSwapPathProps);
+        }
 
         // Clear the feedIdSet
         (string[] memory feedIds, address[] memory addresses) = _flushMapping();
