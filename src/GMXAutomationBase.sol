@@ -79,6 +79,7 @@ contract GMXAutomationBase is Ownable2Step {
     /// @notice Returns all values from and clears the s_feedIdToMarketTokenMap
     /// @dev Iterates over the feedIdToMarketTokenMap, and removes each feedId and returns them as an array
     /// @return feedIds the feedIds that were in the feedIdToMarketTokenMap
+    /// @return addresses the addresses that were in the feedIdToMarketTokenMap
     function _flushMapping() internal returns (string[] memory feedIds, address[] memory addresses) {
         uint256 length = s_feedIdToMarketTokenMap.length();
         feedIds = new string[](length);
@@ -98,7 +99,7 @@ contract GMXAutomationBase is Ownable2Step {
     /// @return the hexadecimal string
     function _toHexString(bytes32 value) internal pure returns (string memory) {
         bytes memory buffer = abi.encodePacked(value);
-        // Fixed buffer size for hexadecimal convertion
+        // Fixed buffer size for hexadecimal conversion
         bytes memory converted = new bytes(buffer.length * 2);
         bytes memory _base = "0123456789abcdef";
 
