@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+import {TestData} from "./TestData.sol";
 // gmx-synthetics
 import {GMXAutomationBase} from "../src/GMXAutomationBase.sol";
 import {GMXAutomationBaseHelper} from "./helpers/GMXAutomationBaseHelper.sol";
@@ -14,6 +15,44 @@ import {Test, console} from "forge-std/Test.sol";
 import {ERC20Mock} from "openzeppelin/mocks/ERC20Mock.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
 import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
+
+contract GMXAutomationBaseTest_modifierOnlyForwarder is Test, TestData {
+    GMXAutomationBaseHelper internal s_gmxAutomation;
+
+    function setUp() public {
+        s_gmxAutomation = new GMXAutomationBaseHelper(DataStore(address(1)), Reader(address(2)));
+        s_gmxAutomation.setForwarderAddress(FORWARDER);
+    }
+
+    function test_modifierOnlyForwarder_success() public {
+        vm.prank(FORWARDER);
+        s_gmxAutomation.modifierOnlyForwarder();
+    }
+
+    function test_modifierOnlyForwarder_nonForwarder_reverts() public {
+        vm.expectRevert(GMXAutomationBase.GMXAutomationBase_OnlyForwarder.selector);
+        s_gmxAutomation.modifierOnlyForwarder();
+    }
+}
+
+contract GMXAutomationBaseTest_setForwarderAddress is Test {
+    GMXAutomationBase internal s_gmxAutomation;
+
+    function setUp() public {
+        s_gmxAutomation = new GMXAutomationBase(DataStore(address(1)), Reader(address(2)));
+    }
+
+    function test_setForwarderAddress() public {
+        s_gmxAutomation.setForwarderAddress(address(12345));
+        assertEq(s_gmxAutomation.s_forwarderAddress(), address(12345));
+    }
+
+    function test_setForwarderAddress_nonOwner_reverts() public {
+        vm.prank(address(12345));
+        vm.expectRevert("Ownable: caller is not the owner");
+        s_gmxAutomation.setForwarderAddress(address(12345));
+    }
+}
 
 contract GMXAutomationBaseTest_withdraw is Test {
     ERC20Mock internal s_token;

@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 import {WithdrawalAutomation} from "../src/WithdrawalAutomation.sol";
 import {TestData} from "./TestData.sol";
 import {LibGMXEventLogDecoder} from "../src/libraries/LibGMXEventLogDecoder.sol";
+import {GMXAutomationBase} from "../src/GMXAutomationBase.sol";
 // openzeppelin
 import {ERC20Mock} from "openzeppelin/mocks/ERC20Mock.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
@@ -39,6 +40,7 @@ contract WithdrawalAutomation_End2End is Test, TestData {
         s_reader = Reader(vm.envAddress(READER_LABEL));
         s_withdrawalHandler = WithdrawalHandler(vm.envAddress(WITHDRAWAL_HANDLER_LABEL));
         s_withdrawalAutomation = new WithdrawalAutomation(s_dataStore, s_reader, s_withdrawalHandler);
+        s_withdrawalAutomation.setForwarderAddress(address(this));
         Market.Props[] memory marketProps = s_reader.getMarkets(s_dataStore, 0, 1);
         for (uint256 i = 0; i < marketProps.length; i++) {
             s_marketProps.push(marketProps[i]);
@@ -256,6 +258,7 @@ contract WithdrawalAutomationTest_performUpkeep is Test, TestData {
         s_reader = Reader(vm.envAddress(READER_LABEL));
         s_withdrawalHandler = WithdrawalHandler(vm.envAddress(ORDER_HANDLER_LABEL));
         s_withdrawalAutomation = new WithdrawalAutomation(s_dataStore, s_reader, s_withdrawalHandler);
+        s_withdrawalAutomation.setForwarderAddress(FORWARDER);
     }
 
     function test_performUpkeep_success(bytes[] memory values, bytes32 key, address[] memory marketAddresses) public {
@@ -264,11 +267,23 @@ contract WithdrawalAutomationTest_performUpkeep is Test, TestData {
         OracleUtils.SetPricesParams memory expectedParams;
         expectedParams.realtimeFeedTokens = marketAddresses;
         expectedParams.realtimeFeedData = values;
+        vm.prank(FORWARDER);
         vm.mockCall(
             address(s_withdrawalHandler),
             abi.encodeWithSelector(WithdrawalHandler.executeWithdrawal.selector, key, expectedParams),
             abi.encode("")
         );
+        s_withdrawalAutomation.performUpkeep(performData);
+    }
+
+    function test_performUpkeep_wrongForwarder_reverts(
+        bytes[] memory values,
+        bytes32 key,
+        address[] memory marketAddresses
+    ) public {
+        bytes memory extraData = abi.encode(key, marketAddresses);
+        bytes memory performData = abi.encode(values, extraData);
+        vm.expectRevert(GMXAutomationBase.GMXAutomationBase_OnlyForwarder.selector);
         s_withdrawalAutomation.performUpkeep(performData);
     }
 }
