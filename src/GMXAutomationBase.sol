@@ -19,6 +19,9 @@ contract GMXAutomationBase is Ownable2Step {
 
     // ERRORS
     error GMXAutomationBase_OnlyForwarder();
+    error GMXAutomationBase_ZeroIndexTokenFeedId();
+    error GMXAutomationBase_ZeroLongTokenFeedId();
+    error GMXAutomationBase_ZeroShortTokenFeedId();
 
     // IMMUTABLES
     DataStore public immutable i_dataStore;
@@ -79,21 +82,24 @@ contract GMXAutomationBase is Ownable2Step {
     function _addPropsToMapping(Market.Props memory marketProps) internal {
         if (marketProps.indexToken != address(0)) {
             uint256 indexTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken)));
-            if (indexTokenFeedId != 0 && !s_feedIdToMarketTokenMap.contains(indexTokenFeedId)) {
+            if (indexTokenFeedId == 0) revert GMXAutomationBase_ZeroIndexTokenFeedId();
+            if (!s_feedIdToMarketTokenMap.contains(indexTokenFeedId)) {
                 s_feedIdToMarketTokenMap.set(indexTokenFeedId, marketProps.indexToken);
             }
         }
 
         if (marketProps.longToken != address(0)) {
             uint256 longTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken)));
-            if (longTokenFeedId != 0 && !s_feedIdToMarketTokenMap.contains(longTokenFeedId)) {
+            if (longTokenFeedId == 0) revert GMXAutomationBase_ZeroLongTokenFeedId();
+            if (!s_feedIdToMarketTokenMap.contains(longTokenFeedId)) {
                 s_feedIdToMarketTokenMap.set(longTokenFeedId, marketProps.longToken);
             }
         }
 
         if (marketProps.shortToken != address(0)) {
             uint256 shortTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken)));
-            if (shortTokenFeedId != 0 && !s_feedIdToMarketTokenMap.contains(shortTokenFeedId)) {
+            if (shortTokenFeedId == 0) revert GMXAutomationBase_ZeroShortTokenFeedId();
+            if (!s_feedIdToMarketTokenMap.contains(shortTokenFeedId)) {
                 s_feedIdToMarketTokenMap.set(shortTokenFeedId, marketProps.shortToken);
             }
         }

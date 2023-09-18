@@ -126,6 +126,90 @@ contract GMXAutomationBaseTest__addPropsToMapping is Test {
         assertEq(s_gmxAutomation.feedIdToMarketTokenMapGet(uint256(longTokenFeedId)), marketProps.longToken);
         assertEq(s_gmxAutomation.feedIdToMarketTokenMapGet(uint256(shortTokenFeedId)), marketProps.shortToken);
     }
+
+    function test__addPropsToMapping_ZeroIndexTokenFeedId_reverts() public {
+        Market.Props memory marketProps;
+        marketProps.indexToken = address(1);
+        marketProps.longToken = address(2);
+        marketProps.shortToken = address(3);
+
+        bytes32 indexTokenFeedId;
+        bytes32 longTokenFeedId = bytes32("100");
+        bytes32 shortTokenFeedId = bytes32("101");
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.indexToken)),
+            abi.encode(indexTokenFeedId)
+        );
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.longToken)),
+            abi.encode(longTokenFeedId)
+        );
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.shortToken)),
+            abi.encode(shortTokenFeedId)
+        );
+        vm.expectRevert(GMXAutomationBase.GMXAutomationBase_ZeroIndexTokenFeedId.selector);
+        s_gmxAutomation.addPropsToMapping(marketProps);
+    }
+
+    function test__addPropsToMapping_ZeroLongTokenFeedId_reverts() public {
+        Market.Props memory marketProps;
+        marketProps.indexToken = address(1);
+        marketProps.longToken = address(2);
+        marketProps.shortToken = address(3);
+
+        bytes32 indexTokenFeedId = bytes32("99");
+        bytes32 longTokenFeedId;
+        bytes32 shortTokenFeedId = bytes32("101");
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.indexToken)),
+            abi.encode(indexTokenFeedId)
+        );
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.longToken)),
+            abi.encode(longTokenFeedId)
+        );
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.shortToken)),
+            abi.encode(shortTokenFeedId)
+        );
+        vm.expectRevert(GMXAutomationBase.GMXAutomationBase_ZeroLongTokenFeedId.selector);
+        s_gmxAutomation.addPropsToMapping(marketProps);
+    }
+
+    function test__addPropsToMapping_ZeroShortTokenFeedId_reverts() public {
+        Market.Props memory marketProps;
+        marketProps.indexToken = address(1);
+        marketProps.longToken = address(2);
+        marketProps.shortToken = address(3);
+
+        bytes32 indexTokenFeedId = bytes32("99");
+        bytes32 longTokenFeedId = bytes32("100");
+        bytes32 shortTokenFeedId;
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.indexToken)),
+            abi.encode(indexTokenFeedId)
+        );
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.longToken)),
+            abi.encode(longTokenFeedId)
+        );
+        vm.mockCall(
+            DATA_STORE_ADDRESS,
+            abi.encodeWithSelector(DataStore.getBytes32.selector, Keys.realtimeFeedIdKey(marketProps.shortToken)),
+            abi.encode(shortTokenFeedId)
+        );
+        vm.expectRevert(GMXAutomationBase.GMXAutomationBase_ZeroShortTokenFeedId.selector);
+        s_gmxAutomation.addPropsToMapping(marketProps);
+    }
 }
 
 contract GMXAutomationBaseTest__flushMapping is Test {
