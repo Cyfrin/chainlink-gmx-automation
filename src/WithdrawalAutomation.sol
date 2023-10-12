@@ -122,7 +122,7 @@ contract WithdrawalAutomation is ILogAutomation, StreamsLookupCompatibleInterfac
     ///         - bytes32 rawVs
     ///     - bytes extraData <- This is where the key and addresses array are stored
     /// @dev Decode the performData and call executeWithdrawal
-    function performUpkeep(bytes calldata performData) external onlyForwarder {
+    function performUpkeep(bytes calldata performData) external onlyForwarder simulationCheck {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
         (bytes32 key, address[] memory addresses) = abi.decode(extraData, (bytes32, address[]));
         OracleUtils.SetPricesParams memory oracleParams;
