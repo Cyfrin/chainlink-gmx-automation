@@ -41,7 +41,7 @@ contract MarketAutomation is ILogAutomation, StreamsLookupCompatibleInterface, G
     /// @param reader the Reader contract address - immutable
     /// @param orderHandler the OrderHandler contract address - immutable
     constructor(DataStore dataStore, Reader reader, OrderHandler orderHandler) GMXAutomationBase(dataStore, reader) {
-        i_orderHandler = orderHandler;
+        i_orderHandler = orderHandler; 
     }
 
     ///////////////////////////
@@ -125,7 +125,7 @@ contract MarketAutomation is ILogAutomation, StreamsLookupCompatibleInterface, G
     ///         - bytes32 rawVs
     ///     - bytes extraData <- This is where the key and addresses array are stored
     /// @dev Decode the performData and call executeOrder
-    function performUpkeep(bytes calldata performData) external onlyForwarder {
+    function performUpkeep(bytes calldata performData) external onlyForwarder simulationCheck {
         (bytes[] memory values, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
         (bytes32 key, address[] memory addresses) = abi.decode(extraData, (bytes32, address[]));
         OracleUtils.SetPricesParams memory oracleParams;
