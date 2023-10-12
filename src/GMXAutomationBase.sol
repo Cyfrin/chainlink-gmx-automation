@@ -30,6 +30,7 @@ contract GMXAutomationBase is Ownable2Step {
     // STORAGE
     // The address that `performUpkeep` is called from
     address public s_forwarderAddress;
+    bool public simulationEnabled;
 
     // This should be empty after every transaction. It is filled and cleared each time checkLog is called.
     // mapping (uint256(feedId) => tokenAddress)
@@ -40,6 +41,7 @@ contract GMXAutomationBase is Ownable2Step {
     constructor(DataStore dataStore, Reader reader) {
         i_dataStore = dataStore;
         i_reader = reader;
+        simulationEnabled = false;
     }
 
     ///////////////////////////
@@ -49,6 +51,14 @@ contract GMXAutomationBase is Ownable2Step {
     /// @notice Check that the msg.sender is the forwarder address
     modifier onlyForwarder() {
         if (msg.sender != s_forwarderAddress) revert GMXAutomationBase_OnlyForwarder();
+        _;
+    }
+
+    /// @notice Check if tx is being simulated and exit if simulation is disabled
+    modifier simulationCheck() {
+        if(tx.origin == address(0) && !simulationEnabled){
+            return;
+        }
         _;
     }
 
@@ -69,6 +79,13 @@ contract GMXAutomationBase is Ownable2Step {
     /// @param forwarderAddress the address to set
     function setForwarderAddress(address forwarderAddress) external onlyOwner {
         s_forwarderAddress = forwarderAddress;
+    }
+
+    /// @notice Set simulation flag which decides if performUpkeep should be simulated by Chainlink Automation
+    /// @dev Only callable by the owner
+    /// @param flag whether simulation is enabled or disabled
+    function setSimulation(bool flag) external onlyOwner{
+        simulationEnabled = flag;
     }
 
     ///////////////////////////
