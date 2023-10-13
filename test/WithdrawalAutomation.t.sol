@@ -276,6 +276,20 @@ contract WithdrawalAutomationTest_performUpkeep is Test, TestData {
         s_withdrawalAutomation.performUpkeep(performData);
     }
 
+    function test_performUpkeep_txOrigin_zero_success(
+        bytes[] memory values,
+        bytes32 key,
+        address[] memory marketAddresses
+    ) public {
+        bytes memory extraData = abi.encode(key, marketAddresses);
+        bytes memory performData = abi.encode(values, extraData);
+        OracleUtils.SetPricesParams memory expectedParams;
+        expectedParams.realtimeFeedTokens = marketAddresses;
+        expectedParams.realtimeFeedData = values;
+        vm.prank(FORWARDER, address(0));
+        s_withdrawalAutomation.performUpkeep(performData);
+    }
+
     function test_performUpkeep_wrongForwarder_reverts(
         bytes[] memory values,
         bytes32 key,
