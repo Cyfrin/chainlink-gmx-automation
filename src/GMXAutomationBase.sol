@@ -75,7 +75,7 @@ contract GMXAutomationBase is Ownable2Step {
     // INTERNAL FUNCTIONS
     ///////////////////////////
 
-    /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the feedIdToMarketTokenMap
+    /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the marketTokenToFeedId
     /// @dev Does not allow for duplicate feedIds or zero address feedIds
     /// @dev Does not push the Props.marketToken feedId to the feedIdToMarketTokenMap
     /// @param marketProps the Market Props struct to retrieve the feedIds from
