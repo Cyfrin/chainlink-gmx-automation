@@ -32,7 +32,7 @@ contract GMXAutomationBase is Ownable2Step {
     address public s_forwarderAddress;
 
     // This should be empty after every transaction. It is filled and cleared each time checkLog is called.
-    // mapping (uint256(feedId) => tokenAddress)
+    // mapping (tokenAddress => uint256(feedId))
     EnumerableMap.AddressToUintMap internal s_marketTokenToFeedId;
 
     /// @param dataStore the DataStore contract address - immutable
@@ -75,66 +75,63 @@ contract GMXAutomationBase is Ownable2Step {
     // INTERNAL FUNCTIONS
     ///////////////////////////
 
-    /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the marketTokenToFeedId
+    /// @notice Pushes the feedIds for marketProps: indexToken, longToken and shortToken to the feedIdToMarketTokenMap
     /// @dev Does not allow for duplicate feedIds or zero address feedIds
     /// @dev Does not push the Props.marketToken feedId to the feedIdToMarketTokenMap
     /// @param marketProps the Market Props struct to retrieve the feedIds from
-function _addPropsToMapping(Market.Props memory marketProps) internal {
-    if (marketProps.indexToken != address(0)) {
-        uint256 indexTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken)));
-        if (indexTokenFeedId == 0) revert GMXAutomationBase_ZeroIndexTokenFeedId();
-        if (!s_marketTokenToFeedId.contains(marketProps.indexToken)) {
-            s_marketTokenToFeedId.set(marketProps.indexToken, indexTokenFeedId);
+    function _addPropsToMapping(Market.Props memory marketProps) internal {
+        if (marketProps.indexToken != address(0)) {
+            uint256 indexTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken)));
+            if (indexTokenFeedId == 0) revert GMXAutomationBase_ZeroIndexTokenFeedId();
+            if (!s_marketTokenToFeedId.contains(marketProps.indexToken)) {
+                s_marketTokenToFeedId.set(marketProps.indexToken, indexTokenFeedId);
+            }
+        }
+
+        if (marketProps.longToken != address(0)) {
+            uint256 longTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken)));
+            if (longTokenFeedId == 0) revert GMXAutomationBase_ZeroLongTokenFeedId();
+            if (!s_marketTokenToFeedId.contains(marketProps.longToken)) {
+                s_marketTokenToFeedId.set(marketProps.longToken, longTokenFeedId);
+            }
+        }
+
+        if (marketProps.shortToken != address(0)) {
+            uint256 shortTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken)));
+            if (shortTokenFeedId == 0) revert GMXAutomationBase_ZeroShortTokenFeedId();
+            if (!s_marketTokenToFeedId.contains(marketProps.shortToken)) {
+                s_marketTokenToFeedId.set(marketProps.shortToken, shortTokenFeedId);
+            }
         }
     }
 
-    if (marketProps.longToken != address(0)) {
-        uint256 longTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken)));
-        if (longTokenFeedId == 0) revert GMXAutomationBase_ZeroLongTokenFeedId();
-        if (!s_marketTokenToFeedId.contains(marketProps.longToken)) {
-            s_marketTokenToFeedId.set(marketProps.longToken, longTokenFeedId);
+    function _isAddressInMap(address addr) private view returns (bool) {
+        for (uint256 i = 0; i < s_marketTokenToFeedId.length(); i++) {
+            (address currentAddress,) = s_marketTokenToFeedId.at(i);
+            if (currentAddress == addr) {
+                return true;
+            }
         }
+        return false;
     }
 
-    if (marketProps.shortToken != address(0)) {
-        uint256 shortTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken)));
-        if (shortTokenFeedId == 0) revert GMXAutomationBase_ZeroShortTokenFeedId();
-        if (!s_marketTokenToFeedId.contains(marketProps.shortToken)) {
-            s_marketTokenToFeedId.set(marketProps.shortToken, shortTokenFeedId);
-        }
-    }
-}
-
-
-function _isAddressInMap(address addr) private view returns (bool) {
-    for (uint i = 0; i < s_marketTokenToFeedId.length(); i++) {
-        (address currentAddress, ) = s_marketTokenToFeedId.at(i);
-        if (currentAddress == addr) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-/// @notice Returns all values from and clears the s_marketTokenToFeedId
-/// @dev Iterates over the addressToMarketTokenMap, and removes each address and returns them as an array along with the corresponding feedIds
-/// @return feedIds the feedIds that were in the addressToMarketTokenMap mapped with respective token addresses
-/// @return addresses the addresses that were in the addressToMarketTokenMap mapped with respective feedIds
+    /// @notice Returns all values from and clears the s_marketTokenToFeedId
+    /// @dev Iterates over the addressToMarketTokenMap, and removes each address and returns them as an array along with the corresponding feedIds
+    /// @return feedIds the feedIds that were in the addressToMarketTokenMap mapped with respective token addresses
+    /// @return addresses the addresses that were in the addressToMarketTokenMap mapped with respective feedIds
     function _flushMapping() internal returns (string[] memory feedIds, address[] memory addresses) {
-    uint256 length = s_marketTokenToFeedId.length();
-    feedIds = new string[](length);
-    addresses = new address[](length);
-    uint256 count = 0;
-    while (s_marketTokenToFeedId.length() > 0) {
-        (address addressKey, uint256 uintValue) = s_marketTokenToFeedId.at(s_marketTokenToFeedId.length() - 1);
-        s_marketTokenToFeedId.remove(addressKey);
-        feedIds[count] = _toHexString(bytes32(uintValue));
-        addresses[count] = addressKey;
-        count++;
+        uint256 length = s_marketTokenToFeedId.length();
+        feedIds = new string[](length);
+        addresses = new address[](length);
+        uint256 count = 0;
+        while (s_marketTokenToFeedId.length() > 0) {
+            (address addressKey, uint256 uintValue) = s_marketTokenToFeedId.at(s_marketTokenToFeedId.length() - 1);
+            s_marketTokenToFeedId.remove(addressKey);
+            feedIds[count] = _toHexString(bytes32(uintValue));
+            addresses[count] = addressKey;
+            count++;
+        }
     }
-}
-
 
     /// @notice Converts a bytes buffer to a hexadecimal string
     /// @param value the bytes32 value to convert
