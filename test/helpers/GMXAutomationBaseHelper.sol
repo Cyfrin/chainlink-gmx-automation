@@ -11,7 +11,7 @@ import {Market} from "gmx-synthetics/market/Market.sol";
 import {EnumerableMap} from "openzeppelin/utils/structs/EnumerableMap.sol";
 
 contract GMXAutomationBaseHelper is GMXAutomationBase {
-    using EnumerableMap for EnumerableMap.UintToAddressMap;
+    using EnumerableMap for EnumerableMap.AddressToUintMap;
 
     constructor(DataStore dataStore, Reader reader) GMXAutomationBase(dataStore, reader) {}
 
@@ -29,27 +29,27 @@ contract GMXAutomationBaseHelper is GMXAutomationBase {
         return _toHexString(value);
     }
 
-    function feedIdToMarketTokenMapSet(uint256 feedId, address addr) public {
-        s_feedIdToMarketTokenMap.set(feedId, addr);
+    function marketTokenToFeedIdMapSet(address addr, uint256 feedId) public {
+        s_marketTokenToFeedId.set(addr, feedId);
     }
 
-    function feedIdToMarketTokenMapLength() public view returns (uint256) {
-        return s_feedIdToMarketTokenMap.length();
+    function marketTokenToFeedIdMapLength() public view returns (uint256) {
+        return s_marketTokenToFeedId.length();
     }
 
-    function feedIdToMarketTokenMapContains(uint256 feedId) public view returns (bool) {
-        return s_feedIdToMarketTokenMap.contains(feedId);
+    function marketTokenToFeedIdMapContains(address addr) public view returns (bool) {
+        return s_marketTokenToFeedId.contains(addr);
     }
 
-    function feedIdToMarketTokenMapGet(uint256 feedId) public view returns (address) {
-        return s_feedIdToMarketTokenMap.get(feedId);
+    function marketTokenToFeedIdMapGet(address addr) public view returns (uint) {
+        return s_marketTokenToFeedId.get(addr);
     }
 
-    function feedIdToMarketTokenMapAt(uint256 index) public view returns (uint256, address) {
-        return s_feedIdToMarketTokenMap.at(index);
+    function marketTokenToFeedIdMapAt(uint256 index) public view returns (address, uint256) {
+        return s_marketTokenToFeedId.at(index);
     }
 
-    function feedIdToMarketTokenMapKeys() public view returns (uint256[] memory) {
-        return s_feedIdToMarketTokenMap.keys();
+    function marketTokenToFeedIdMapKeys() public view returns (address[] memory) {
+        return s_marketTokenToFeedId.keys();
     }
 }

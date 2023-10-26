@@ -121,10 +121,10 @@ contract GMXAutomationBaseTest__addPropsToMapping is Test {
         );
         s_gmxAutomation.addPropsToMapping(marketProps);
 
-        assertEq(s_gmxAutomation.feedIdToMarketTokenMapLength(), 3);
-        assertEq(s_gmxAutomation.feedIdToMarketTokenMapGet(uint256(indexTokenFeedId)), marketProps.indexToken);
-        assertEq(s_gmxAutomation.feedIdToMarketTokenMapGet(uint256(longTokenFeedId)), marketProps.longToken);
-        assertEq(s_gmxAutomation.feedIdToMarketTokenMapGet(uint256(shortTokenFeedId)), marketProps.shortToken);
+        assertEq(s_gmxAutomation.marketTokenToFeedIdMapLength(), 3);
+        assertEq(s_gmxAutomation.marketTokenToFeedIdMapGet(marketProps.indexToken), uint256(indexTokenFeedId));
+        assertEq(s_gmxAutomation.marketTokenToFeedIdMapGet(marketProps.longToken), uint256(longTokenFeedId));
+        assertEq(s_gmxAutomation.marketTokenToFeedIdMapGet(marketProps.shortToken), uint256(shortTokenFeedId));
     }
 
     function test__addPropsToMapping_ZeroIndexTokenFeedId_reverts() public {
@@ -231,7 +231,7 @@ contract GMXAutomationBaseTest__flushMapping is Test {
         addresses[1] = address(2);
         addresses[2] = address(3);
         for (uint256 i = 0; i < feedIds.length; i++) {
-            s_gmxAutomation.feedIdToMarketTokenMapSet(uint256(feedIds[i]), addresses[i]);
+            s_gmxAutomation.marketTokenToFeedIdMapSet(addresses[i],uint256(feedIds[i]));
         }
         s_feedIdToAddress["0x14e044f932bb959cc2aa8dc1ba110c09224e639aae00264c1ffc2a0830904a3c"] = addresses[0];
         s_feedIdToAddress["0x4ce52cf28e49f4673198074968aeea280f13b5f897c687eb713bcfc1eeab89ba"] = addresses[1];
@@ -246,10 +246,10 @@ contract GMXAutomationBaseTest__flushMapping is Test {
     function test__flushMapping_shouldBeEmptyAfter(address[] memory addresses) public {
         for (uint256 i = 0; i < addresses.length; i++) {
             if (addresses[i] == address(0)) continue;
-            s_gmxAutomation.feedIdToMarketTokenMapSet(uint256(keccak256(abi.encode(addresses[i]))), addresses[i]);
+            s_gmxAutomation.marketTokenToFeedIdMapSet(addresses[i], uint256(keccak256(abi.encode(addresses[i]))));
         }
         s_gmxAutomation.flushMapping();
-        assertEq(s_gmxAutomation.feedIdToMarketTokenMapLength(), 0);
+        assertEq(s_gmxAutomation.marketTokenToFeedIdMapLength(), 0);
     }
 }
 

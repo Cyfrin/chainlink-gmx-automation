@@ -14,7 +14,7 @@ import {Reader} from "gmx-synthetics/reader/Reader.sol";
 /// @title Base Automation Contract for GMX Automation Contracts
 /// @author Alex Roan - Cyfrin (@alexroan)
 contract GMXAutomationBase is Ownable2Step {
-    using EnumerableMap for EnumerableMap.UintToAddressMap;
+    using EnumerableMap for EnumerableMap.AddressToUintMap;
     using SafeERC20 for IERC20;
 
     // ERRORS
@@ -32,8 +32,8 @@ contract GMXAutomationBase is Ownable2Step {
     address public s_forwarderAddress;
 
     // This should be empty after every transaction. It is filled and cleared each time checkLog is called.
-    // mapping (uint256(feedId) => tokenAddress)
-    EnumerableMap.UintToAddressMap internal s_feedIdToMarketTokenMap;
+    // mapping (tokenAddress => uint256(feedId))
+    EnumerableMap.AddressToUintMap internal s_marketTokenToFeedId;
 
     /// @param dataStore the DataStore contract address - immutable
     /// @param reader the Reader contract address - immutable
@@ -83,42 +83,42 @@ contract GMXAutomationBase is Ownable2Step {
         if (marketProps.indexToken != address(0)) {
             uint256 indexTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.indexToken)));
             if (indexTokenFeedId == 0) revert GMXAutomationBase_ZeroIndexTokenFeedId();
-            if (!s_feedIdToMarketTokenMap.contains(indexTokenFeedId)) {
-                s_feedIdToMarketTokenMap.set(indexTokenFeedId, marketProps.indexToken);
+            if (!s_marketTokenToFeedId.contains(marketProps.indexToken)) {
+                s_marketTokenToFeedId.set(marketProps.indexToken, indexTokenFeedId);
             }
         }
 
         if (marketProps.longToken != address(0)) {
             uint256 longTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.longToken)));
             if (longTokenFeedId == 0) revert GMXAutomationBase_ZeroLongTokenFeedId();
-            if (!s_feedIdToMarketTokenMap.contains(longTokenFeedId)) {
-                s_feedIdToMarketTokenMap.set(longTokenFeedId, marketProps.longToken);
+            if (!s_marketTokenToFeedId.contains(marketProps.longToken)) {
+                s_marketTokenToFeedId.set(marketProps.longToken, longTokenFeedId);
             }
         }
 
         if (marketProps.shortToken != address(0)) {
             uint256 shortTokenFeedId = uint256(i_dataStore.getBytes32(Keys.realtimeFeedIdKey(marketProps.shortToken)));
             if (shortTokenFeedId == 0) revert GMXAutomationBase_ZeroShortTokenFeedId();
-            if (!s_feedIdToMarketTokenMap.contains(shortTokenFeedId)) {
-                s_feedIdToMarketTokenMap.set(shortTokenFeedId, marketProps.shortToken);
+            if (!s_marketTokenToFeedId.contains(marketProps.shortToken)) {
+                s_marketTokenToFeedId.set(marketProps.shortToken, shortTokenFeedId);
             }
         }
     }
 
-    /// @notice Returns all values from and clears the s_feedIdToMarketTokenMap
-    /// @dev Iterates over the feedIdToMarketTokenMap, and removes each feedId and returns them as an array
-    /// @return feedIds the feedIds that were in the feedIdToMarketTokenMap
-    /// @return addresses the addresses that were in the feedIdToMarketTokenMap
+    /// @notice Returns all values from and clears the s_marketTokenToFeedId
+    /// @dev Iterates over the addressToMarketTokenMap, and removes each address and returns them as an array along with the corresponding feedIds
+    /// @return feedIds the feedIds that were in the addressToMarketTokenMap mapped with respective token addresses
+    /// @return addresses the addresses that were in the addressToMarketTokenMap mapped with respective feedIds
     function _flushMapping() internal returns (string[] memory feedIds, address[] memory addresses) {
-        uint256 length = s_feedIdToMarketTokenMap.length();
+        uint256 length = s_marketTokenToFeedId.length();
         feedIds = new string[](length);
         addresses = new address[](length);
         uint256 count = 0;
-        while (s_feedIdToMarketTokenMap.length() > 0) {
-            (uint256 uintKey, address value) = s_feedIdToMarketTokenMap.at(s_feedIdToMarketTokenMap.length() - 1);
-            s_feedIdToMarketTokenMap.remove(uintKey);
-            feedIds[count] = _toHexString(bytes32(uintKey));
-            addresses[count] = value;
+        while (s_marketTokenToFeedId.length() > 0) {
+            (address addressKey, uint256 uintValue) = s_marketTokenToFeedId.at(s_marketTokenToFeedId.length() - 1);
+            s_marketTokenToFeedId.remove(addressKey);
+            feedIds[count] = _toHexString(bytes32(uintValue));
+            addresses[count] = addressKey;
             count++;
         }
     }
