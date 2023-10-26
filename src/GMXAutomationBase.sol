@@ -105,16 +105,6 @@ contract GMXAutomationBase is Ownable2Step {
         }
     }
 
-    function _isAddressInMap(address addr) private view returns (bool) {
-        for (uint256 i = 0; i < s_marketTokenToFeedId.length(); i++) {
-            (address currentAddress,) = s_marketTokenToFeedId.at(i);
-            if (currentAddress == addr) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /// @notice Returns all values from and clears the s_marketTokenToFeedId
     /// @dev Iterates over the addressToMarketTokenMap, and removes each address and returns them as an array along with the corresponding feedIds
     /// @return feedIds the feedIds that were in the addressToMarketTokenMap mapped with respective token addresses
